@@ -1,9 +1,9 @@
 
 import { Sidebar } from "flowbite-react";
-import SidebarContent from "./Sidebaritems";
-import NavItems from "./NavItems";
-import SimpleBar from "simplebar-react";
-import React from "react";
+// import SidebarContent from "./Sidebaritems";
+// import NavItems from "./NavItems";
+// import SimpleBar from "simplebar-react";
+// import React from "react";
 import FullLogo from "../shared/logo/FullLogo";
 import 'simplebar-react/dist/simplebar.min.css';
 import Upgrade from "./Upgrade";
@@ -19,7 +19,7 @@ const MobileSidebar = () => {
           <div className="px-5 py-4 pb-7 flex items-center sidebarlogo bg-[#1f2330]">
             <FullLogo />
           </div>
-          <SimpleBar className="h-[calc(100vh_-_242px)]" style={{ backgroundColor: '#1f2330' }}>
+          {/* <SimpleBar className="h-[calc(100vh_-_242px)]" style={{ backgroundColor: '#1f2330' }}>
             <Sidebar.Items className="px-5 mt-2">
               <Sidebar.ItemGroup className="sidebar-nav hide-menu">
                 {SidebarContent &&
@@ -39,7 +39,7 @@ const MobileSidebar = () => {
                   ))}
               </Sidebar.ItemGroup>
             </Sidebar.Items>
-          </SimpleBar>
+          </SimpleBar> */}
           <Upgrade/>
         </Sidebar>
       </div>
