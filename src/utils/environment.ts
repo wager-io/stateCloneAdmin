@@ -12,5 +12,5 @@ export const getApiUrl = (): string => {
     // Check if running in browser
 
     // Server-side - use environment variable
-    return import.meta.env.DEV ? 'http://localhost:8000' : 'https://azebets.onrender.com'
+    return import.meta.env.DEV ? 'http://localhost:8000' : 'https://wager-backend.onrender.com'
 };
