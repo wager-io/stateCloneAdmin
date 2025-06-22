@@ -16,7 +16,7 @@ interface ApiResponse {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.DEV ? 'http://localhost:8000' : 'https://azebets.onrender.com' // adjust this to your backend URL
+  baseURL: import.meta.env.DEV ? 'http://localhost:8000' : 'https://wager-backend.onrender.com' // adjust this to your backend URL
 });
 
 export const userService = {

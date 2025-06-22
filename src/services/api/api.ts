@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.DEV ? 'http://localhost:8000' : 'https://azebets.onrender.com',
+  baseURL: import.meta.env.DEV ? 'http://localhost:8000' : 'https://wager-backend.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   }
