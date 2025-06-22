@@ -3,8 +3,8 @@
 // import SimpleBar from 'simplebar-react';
 // import 'simplebar-react/dist/simplebar.min.css';
 import FullLogo from '../shared/logo/FullLogo';
-// import NavItems from './NavItems';
-// import SidebarContent from './Sidebaritems';
+import NavItems from './NavItems';
+import SidebarContent from './Sidebaritems';
 
 const SidebarLayout = () => {
   return (
@@ -13,9 +13,7 @@ const SidebarLayout = () => {
       <div className="h-[64px] flex items-center justify-center px-6 bg-[#1f2330]">
         <FullLogo />
       </div>
-
-
-      {/* <SimpleBar style={{ height: 'calc(100vh - 64px)', backgroundColor: '#1f2330' }}>
+      <div style={{ height: 'calc(100vh - 64px)', backgroundColor: '#1f2330' }}>
         <div className="p-4">
           {SidebarContent?.map((section, index) => (
             <div key={index} className="mb-8">
@@ -31,7 +29,7 @@ const SidebarLayout = () => {
             </div>
           ))}
         </div>
-      </SimpleBar> */}
+      </div>
     </div>
   );
 };

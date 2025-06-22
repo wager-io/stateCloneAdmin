@@ -38,12 +38,6 @@ const Header = () => {
         <Navbar className="bg-white dark:bg-gray-800 px-4">
           <div className="flex gap-3 items-center justify-between w-full">
             <div className="flex gap-2 items-center">
-              <span 
-                onClick={() => setIsOpen(true)} 
-                className="h-10 w-10 flex text-black dark:text-white text-opacity-65 xl:hidden hover:text-primary hover:bg-lightprimary rounded-full justify-center items-center cursor-pointer"
-              >
-                <Icon icon="solar:hamburger-menu-line-duotone" height={21} />
-              </span>
               <Notification />
             </div>
 
