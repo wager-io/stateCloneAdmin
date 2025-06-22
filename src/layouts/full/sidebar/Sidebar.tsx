@@ -1,10 +1,10 @@
 // import { Sidebar } from 'flowbite-react';
 // import React from 'react';
-import SimpleBar from 'simplebar-react';
-import 'simplebar-react/dist/simplebar.min.css';
+// import SimpleBar from 'simplebar-react';
+// import 'simplebar-react/dist/simplebar.min.css';
 import FullLogo from '../shared/logo/FullLogo';
-import NavItems from './NavItems';
-import SidebarContent from './Sidebaritems';
+// import NavItems from './NavItems';
+// import SidebarContent from './Sidebaritems';
 
 const SidebarLayout = () => {
   return (
@@ -14,17 +14,15 @@ const SidebarLayout = () => {
         <FullLogo />
       </div>
 
-      {/* Navigation Section */}
-      <SimpleBar style={{ height: 'calc(100vh - 64px)', backgroundColor: '#1f2330' }}>
+
+      {/* <SimpleBar style={{ height: 'calc(100vh - 64px)', backgroundColor: '#1f2330' }}>
         <div className="p-4">
           {SidebarContent?.map((section, index) => (
             <div key={index} className="mb-8">
-              {/* Section Heading */}
               <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase px-4 mb-4">
                 {section.heading}
               </h5>
 
-              {/* Section Items */}
               <div className="space-y-3">
                 {section.children?.map((item) => (
                   <NavItems item={item} key={item.id} />
@@ -33,7 +31,7 @@ const SidebarLayout = () => {
             </div>
           ))}
         </div>
-      </SimpleBar>
+      </SimpleBar> */}
     </div>
   );
 };
