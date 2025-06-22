@@ -41,22 +41,22 @@ const UsersTable = () => {
         }
     };
 
-    const handleStatusUpdate = async (userId: string, currentStatus: 'active' | 'disabled') => {
-        try {
-            const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
-            await userService.updateUserStatus(userId, newStatus);
+    // const handleStatusUpdate = async (userId: string, currentStatus: 'active' | 'disabled') => {
+    //     try {
+    //         const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
+    //         await userService.updateUserStatus(userId, newStatus);
             
-            setUsers(users.map(user => 
-                user._id === userId 
-                    ? { ...user, status: newStatus }
-                    : user
-            ));
+    //         setUsers(users.map(user => 
+    //             user._id === userId 
+    //                 ? { ...user, status: newStatus }
+    //                 : user
+    //         ));
             
-            toast.success(`User ${newStatus === 'disabled' ? 'disabled' : 'activated'} successfully`);
-        } catch (error) {
-            toast.error('Failed to update user status');
-        }
-    };
+    //         toast.success(`User ${newStatus === 'disabled' ? 'disabled' : 'activated'} successfully`);
+    //     } catch (error) {
+    //         toast.error('Failed to update user status');
+    //     }
+    // };
 
     const handleViewDetails = (userId: string) => {
         setSelectedUser(userId);
