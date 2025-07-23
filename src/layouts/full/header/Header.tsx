@@ -49,7 +49,7 @@ const Header = () => {
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                  admin@wager.com
+                  admin@wagergames.com
                 </span>
               </div>
               
