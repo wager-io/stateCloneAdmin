@@ -4,14 +4,14 @@ import { toast } from 'sonner';
 
 export const backendUrl = () => {
   let localhostUrl = "http://localhost:8000";
-  let remoteUrl = "https://safex-42ce38fb7bd7.herokuapp.com";
+  let remoteUrl = "https://wager-backend.onrender.com";
   
   // Check if window is defined (client-side) before accessing location
   const isLocalhost = typeof window !== 'undefined' && 
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   
   const _api = isLocalhost ? localhostUrl : remoteUrl;
-  return _api;
+  return remoteUrl;
 };
 
 const api = axios.create({

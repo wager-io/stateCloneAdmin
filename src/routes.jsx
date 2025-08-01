@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router';
+import Login from './pages/Auth/Login';
 
 // Lazy load pages for better performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -35,6 +36,12 @@ export const routes = [
     element: <Users />,
     name: 'Users',
     showInNav: true,
+  },
+    {
+    path: '/login',
+    element: <Login />,
+    name: 'Login',
+    showInNav: false,
   },
   {
     path: '/reports',

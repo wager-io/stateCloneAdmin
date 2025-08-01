@@ -1,14 +1,23 @@
 import React from 'react';
 import { IoClose } from "react-icons/io5";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CreateAdmin from '../components/Admin/create-admin';
 import { FilterList, Padding } from '@mui/icons-material';
-
+import api from "../api/axios"
 
 export default function Admins(){
     const [showForm, setShowForm] = useState(false);
     const toggleForm = () => setShowForm(!showForm);
 
+    useEffect(()=>{
+        async function getAdmins(){
+            const response = await api.get('/admin/get-all-admin')
+           if(response.success){
+                console.log(response.data)
+           }
+        }
+        getAdmins()
+    },[])
     
     
     return(

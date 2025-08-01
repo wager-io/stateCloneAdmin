@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './components/Layout';
 import { routes } from './routes';
+import { Toaster } from 'sonner';
 
 // Function to recursively create route objects with nested children
 function createRouteConfig(routes) {
@@ -34,7 +35,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+    <Toaster richColors position='bottom-left'/>
+       <RouterProvider router={router} />;
+    </>
+  ) 
+
 }
 
 export default App;
