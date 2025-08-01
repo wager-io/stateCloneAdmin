@@ -16,7 +16,7 @@ export default function Sidebar() {
     { path: '/users', name: 'Users', icon: UsersIcon },
     { path: '/reports', name: 'Reports', icon: TasksIcon },
     { path: '/transactions', name: 'Transactions', icon: TransactionsIcon },
-    { path: '/create-admin', name: 'Create New Admin', icon: PersonAddIcon }
+    { path: '/Admins', name: 'Admins', icon: PersonAddIcon }
   ];
 
   const handleLogout = () => {
