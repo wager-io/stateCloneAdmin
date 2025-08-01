@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router';
 import Login from './pages/Auth/Login';
+import Cookies from 'js-cookie';
 
 // Lazy load pages for better performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -16,17 +17,21 @@ const WithdrawalsTable = lazy(() => import('./components/transactions/Withdrawal
 const BillsTable = lazy(() => import('./components/transactions/BillsTable'));
 const BonusTable = lazy(() => import('./components/transactions/BonusTable'));
 
+ const token = Cookies.get('token'); 
+ const isAuthenticated = !!token; // Check if token exists
+
+
 export const routes = [
 
   {
     path: '/',
-    element: <Navigate to="/dashboard" /> ,
+    element: <Navigate to={isAuthenticated ? "/dashboard" : "/login"} /> ,
     name: 'Home',
     showInNav: false,
   },
     {
     path: '/dashboard',
-    element: <Dashboard />,
+    element:  <Dashboard />,
     name: 'Dashboard',
     showInNav: true,
   },
