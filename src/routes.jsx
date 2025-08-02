@@ -9,6 +9,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Users = lazy(() => import('./pages/Users'));
 const Transactions = lazy(() => import('./pages/Transactions'));
+const Admins = lazy(() => import('./pages/Admins'));
 const Reports = lazy(() => import('./pages/Reports'));
 
 // Lazy load transaction components
@@ -51,6 +52,12 @@ export const routes = [
     path: '/reports',
     element: <Reports />,
     name: 'Reports',
+    showInNav: true,
+  },
+  {
+    path: '/admins',
+    element: <Admins />,
+    name: 'Admins',
     showInNav: true,
   },
   {
