@@ -11,11 +11,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function MonthlyTargetChart() {
   const monthlyData = {
-    target: 200000,
-    achieved: 156000,
+    target: 20000,
+    achieved: 15000,
     deposits: 155000,
-    withdrawals: 110000,
-    revenue: 45000
+    withdrawals: 11000,
+    revenue: 4500
   };
 
   const achievementPercentage = Math.round((monthlyData.achieved / monthlyData.target) * 100);

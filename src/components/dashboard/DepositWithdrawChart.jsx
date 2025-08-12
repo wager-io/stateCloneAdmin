@@ -152,5 +152,5 @@ export default function DepositWithdrawChart() {
     },
   };
 
-  return <Chart type='bar' data={data} options={options} />;
+  return <Chart type="bar" data={data} options={options} />;
 }

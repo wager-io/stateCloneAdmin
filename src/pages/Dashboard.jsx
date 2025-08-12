@@ -14,9 +14,9 @@ const TopGameWinners = lazy(() => import('../components/dashboard/TopGameWinners
 const TransactionNotifications = lazy(() => import('../components/dashboard/TransactionNotifications'));
 const TopUsersTable = lazy(() => import('../components/dashboard/TopUsersTable'));
 const MonthlyTargetChart = lazy(() => import('../components/dashboard/MonthlyTargetChart'));
-const DepositWithdrawChart = lazy(() => import('../components/dashboard/DepositWithdrawChart'));
-const UserGrowthChart = lazy(() => import('../components/dashboard/UserGrowthChart'));
-const ChartContainer = lazy(() => import('../components/dashboard/ChartContainer'));
+// const DepositWithdrawChart = lazy(() => import('../components/dashboard/DepositWithdrawChart'));
+// const UserGrowthChart = lazy(() => import('../components/dashboard/UserGrowthChart'));
+// const ChartContainer = lazy(() => import('../components/dashboard/ChartContainer'));
 const MetricCard = lazy(() => import('../components/dashboard/MetricCard'));
 
 export default function Dashboard() {
@@ -139,20 +139,20 @@ export default function Dashboard() {
       </div>
 
       <div className="space-y-6 mb-8">
-        <ChartContainer title="User Growth Trend">
+        {/* <ChartContainer title="User Growth Trend">
           <UserGrowthChart />
-        </ChartContainer>
+        </ChartContainer> */}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <ChartContainer title="Deposits vs Withdrawals">
+            {/* <ChartContainer title="Deposits vs Withdrawals">
               <DepositWithdrawChart />
-            </ChartContainer>
+            </ChartContainer> */}
           </div>
           <div className="lg:col-span-1">
-            <ChartContainer title="Monthly Target Progress">
+            {/* <ChartContainer title="Monthly Target Progress">
               <MonthlyTargetChart />
-            </ChartContainer>
+            </ChartContainer> */}
           </div>
         </div>
       </div>
