@@ -1,7 +1,8 @@
 import React from 'react';
 import { EmojiEvents, SportsEsports } from '@mui/icons-material';
+import ContentLoader from 'react-content-loader';
 
-export default function TopGameWinners({ winners }) {
+export default function TopGameWinners({ winners, loading }) {
   return (
     <div 
       className="rounded-xl p-6 mb-8"
@@ -80,11 +81,37 @@ export default function TopGameWinners({ winners }) {
             </tr>
           </thead>
           <tbody>
-            {winners.map((winner, index) => {
-              const multiplier = (winner.payout / winner.betAmount).toFixed(2);
-              const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32']; // Gold, Silver, Bronze
-              
-              return (
+            {loading ? (
+              // Loading skeleton rows
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                  <td colSpan="7" className="py-4 px-4">
+                    <ContentLoader 
+                      speed={2}
+                      width="100%"
+                      height={50}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      foregroundColor="rgba(255, 255, 255, 0.2)"
+                    >
+                      <circle cx="25" cy="25" r="15" />
+                      <rect x="60" y="15" rx="3" ry="3" width="100" height="12" />
+                      <rect x="180" y="15" rx="3" ry="3" width="120" height="12" />
+                      <rect x="320" y="15" rx="3" ry="3" width="100" height="12" />
+                      <rect x="440" y="15" rx="3" ry="3" width="80" height="12" />
+                      <rect x="540" y="15" rx="3" ry="3" width="90" height="12" />
+                      <rect x="650" y="15" rx="15" ry="15" width="60" height="20" />
+                    </ContentLoader>
+                  </td>
+                </tr>
+              ))
+            ) : winners && winners.length > 0 ? (
+              winners.map((winner, index) => {
+                const multiplier = winner.multiplier ? 
+                  winner.multiplier.toFixed(2) : 
+                  (winner.payout / winner.betAmount).toFixed(2);
+                const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32']; // Gold, Silver, Bronze
+                
+                return (
                 <tr 
                   key={index}
                   className="border-b transition-all duration-200 hover:bg-opacity-50"
@@ -105,7 +132,7 @@ export default function TopGameWinners({ winners }) {
                             color: 'white' 
                           }}
                         >
-                          {index + 1}
+                          {winner.rank || index + 1}
                         </span>
                       )}
                     </div>
@@ -162,8 +189,35 @@ export default function TopGameWinners({ winners }) {
                     </span>
                   </td>
                 </tr>
-              );
-            })}
+                );
+              })
+            ) : (
+              // Empty state
+              <tr>
+                <td colSpan="7" className="py-12 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <div 
+                      className="text-6xl opacity-30"
+                      style={{ color: 'var(--text-dark)' }}
+                    >
+                      🏆
+                    </div>
+                    <p 
+                      className="text-lg font-medium"
+                      style={{ color: 'var(--text-dark)' }}
+                    >
+                      No winners found
+                    </p>
+                    <p 
+                      className="text-sm"
+                      style={{ color: 'var(--text-dark)' }}
+                    >
+                      Top game winners will appear here
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -2,10 +2,10 @@ import api from './axios';
 import {toast} from 'sonner';
 
 class ApiService {
-constructor(apiInstance) {
-    this.api = apiInstance;
-}
-  
-}
+    constructor(apiInstance) {
+        this.api = apiInstance;
+    }
 
-export default ApiService;
+}
+const apiService = ApiService()
+export default apiService;

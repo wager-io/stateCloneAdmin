@@ -1,70 +1,76 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router';
-import Login from './pages/Auth/Login';
-import Cookies from 'js-cookie';
+import Chats from './pages/Chats';
 
-// Lazy load pages for better performance
-const Landing = lazy(() => import('./pages/Landing'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Users = lazy(() => import('./pages/Users'));
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Admins = lazy(() => import('./pages/Admins'));
 const Reports = lazy(() => import('./pages/Reports'));
-
-// Lazy load transaction components
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+const Login = lazy(() => import('./pages/Auth/Login'));
 const DepositsTable = lazy(() => import('./components/transactions/DepositsTable'));
 const WithdrawalsTable = lazy(() => import('./components/transactions/WithdrawalsTable'));
 const BillsTable = lazy(() => import('./components/transactions/BillsTable'));
 const BonusTable = lazy(() => import('./components/transactions/BonusTable'));
 
- const token = Cookies.get('token'); 
- const isAuthenticated = !!token; // Check if token exists
-
-
 export const routes = [
-
   {
     path: '/',
-    element: <Navigate to={isAuthenticated ? "/dashboard" : "/login"} /> ,
+    element: <Navigate to="/dashboard" /> ,
     name: 'Home',
     showInNav: false,
+    protected: false,
   },
-    {
+  {
     path: '/dashboard',
-    element:  <Dashboard />,
+    element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
     name: 'Dashboard',
     showInNav: true,
+    protected: true,
   },
   {
     path: '/users',
-    element: <Users />,
+    element: <ProtectedRoute> <Users /> </ProtectedRoute>,
     name: 'Users',
     showInNav: true,
+    protected: true,
   },
     {
     path: '/login',
     element: <Login />,
     name: 'Login',
     showInNav: false,
+    protected: false,
   },
   {
-    path: '/reports',
-    element: <Reports />,
+    path: '/game-reports',
+    element: <ProtectedRoute> <Reports /> </ProtectedRoute>,
     name: 'Reports',
     showInNav: true,
+    protected: true,
   },
   {
     path: '/admins',
-    element: <Admins />,
+    element: <ProtectedRoute> <Admins /> </ProtectedRoute>,
     name: 'Admins',
     showInNav: true,
+    protected: true,
+  },
+    {
+    path: '/chats',
+    element: <ProtectedRoute> <Chats /> </ProtectedRoute>,
+    name: 'Chats',
+    showInNav: true,
+    protected: true,
   },
   {
     path: '/transactions',
-    element: <Transactions />,
+    element: <ProtectedRoute> <Transactions /></ProtectedRoute>,
     name: 'Transactions',
     showInNav: true,
+    protected: true,
     children: [
       {
         index: true,
@@ -89,5 +95,6 @@ export const routes = [
     element: <NotFound />,
     name: 'Not Found',
     showInNav: false,
+    protected: false,
   },
 ];

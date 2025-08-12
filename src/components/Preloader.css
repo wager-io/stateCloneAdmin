@@ -1,0 +1,59 @@
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f0f23, #1e1e3e);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.wager-text {
+  font-size: 3rem;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+}
+
+.wager-text span {
+  display: inline-block;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: bounce 1.5s ease-in-out infinite, gradient 3s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.wager-text span:nth-child(1) { animation-delay: 0s; }
+.wager-text span:nth-child(2) { animation-delay: 0.1s; }
+.wager-text span:nth-child(3) { animation-delay: 0.2s; }
+.wager-text span:nth-child(4) { animation-delay: 0.3s; }
+.wager-text span:nth-child(5) { animation-delay: 0.4s; }
+
+@media (max-width: 768px) {
+  .wager-text {
+    font-size: 2.5rem;
+  }
+}

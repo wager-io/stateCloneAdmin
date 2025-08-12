@@ -1,59 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Visibility, Search } from '@mui/icons-material';
+import ContentLoader from 'react-content-loader';
+import api from '../../api/axios';
 
 export default function DepositsTable() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [deposits, setDeposits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNext: false,
+    hasPrev: false
+  });
 
-  // Sample deposits data
-  const [deposits] = useState([
-    { 
-      transactionId: 'TXN-DEP-001', 
-      transactionHash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12', 
-      amount: 5000, 
-      balance: 45000, 
-      status: 'Completed', 
-      date: '2024-01-15 14:30:22' 
-    },
-    { 
-      transactionId: 'TXN-DEP-002', 
-      transactionHash: '0x9876543210fedcba0987654321fedcba09876543', 
-      amount: 2500, 
-      balance: 40000, 
-      status: 'Pending', 
-      date: '2024-01-15 12:15:10' 
-    },
-    { 
-      transactionId: 'TXN-DEP-003', 
-      transactionHash: '0xabcdef1234567890abcdef1234567890abcdef12', 
-      amount: 8000, 
-      balance: 37500, 
-      status: 'Completed', 
-      date: '2024-01-14 16:45:33' 
-    },
-    { 
-      transactionId: 'TXN-DEP-004', 
-      transactionHash: '0x567890abcdef1234567890abcdef1234567890ab', 
-      amount: 1500, 
-      balance: 29500, 
-      status: 'Failed', 
-      date: '2024-01-14 10:20:15' 
-    },
-    { 
-      transactionId: 'TXN-DEP-005', 
-      transactionHash: '0xfedcba0987654321fedcba0987654321fedcba09', 
-      amount: 3200, 
-      balance: 28000, 
-      status: 'Completed', 
-      date: '2024-01-13 18:12:44' 
-    },
-  ]);
+  // Fetch deposits from API
+  const fetchDeposits = async (page = 1, search = '') => {
+    setLoading(true);
+    try {
+      const response = await api.get('/admin/transactions/deposits', {
+        params: {
+          page,
+          limit: 20,
+          search
+        }
+      });
+      
+      if (response.success) {
+        setDeposits(response.data);
+        setPagination(response.pagination);
+      }
+         setLoading(false);
+    } catch (error) {
+      console.error('Error fetching deposits:', error);
+        setLoading(false);
+    }
+ 
+  };
 
-  const filteredDeposits = deposits.filter(deposit =>
-    deposit.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Initial load
+  useEffect(() => {
+    fetchDeposits();
+  }, []);
+
+  // Search functionality
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      fetchDeposits(1, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchTerm]);
 
   const truncateHash = (hash) => {
+    if (!hash) return 'N/A';
     return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
   };
 
   const getStatusColor = (status) => {
@@ -125,8 +142,31 @@ export default function DepositsTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredDeposits.length > 0 ? (
-              filteredDeposits.map((deposit, index) => (
+            {loading ? (
+              // Loading skeleton rows
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                  <td colSpan="7" className="py-4 px-4">
+                    <ContentLoader 
+                      speed={2}
+                      width="100%"
+                      height={50}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      foregroundColor="rgba(255, 255, 255, 0.2)"
+                    >
+                      <rect x="0" y="10" rx="3" ry="3" width="120" height="12" />
+                      <rect x="140" y="10" rx="3" ry="3" width="100" height="12" />
+                      <rect x="260" y="10" rx="3" ry="3" width="80" height="12" />
+                      <rect x="360" y="10" rx="3" ry="3" width="90" height="12" />
+                      <rect x="470" y="10" rx="15" ry="15" width="60" height="12" />
+                      <rect x="550" y="10" rx="3" ry="3" width="120" height="12" />
+                      <rect x="690" y="10" rx="3" ry="3" width="40" height="12" />
+                    </ContentLoader>
+                  </td>
+                </tr>
+              ))
+            ) : deposits.length > 0 ? (
+              deposits.map((deposit, index) => (
                 <tr 
                   key={deposit.transactionId} 
                   className="border-b transition-all duration-200 hover:bg-opacity-50"
@@ -158,7 +198,7 @@ export default function DepositsTable() {
                     </span>
                   </td>
                   <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-dark)' }}>
-                    {deposit.date}
+                    {formatDate(deposit.date)}
                   </td>
                   <td className="py-4 px-4 text-center">
                     <button 
@@ -193,6 +233,44 @@ export default function DepositsTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {!loading && deposits.length > 0 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm" style={{ color: 'var(--text-dark)' }}>
+            Showing {((pagination.currentPage - 1) * 20) + 1} to {Math.min(pagination.currentPage * 20, pagination.totalCount)} of {pagination.totalCount} deposits
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchDeposits(pagination.currentPage - 1, searchTerm)}
+              disabled={!pagination.hasPrev}
+              className="px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: pagination.hasPrev ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.1)', color: 'var(--text-light)' }}>
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => fetchDeposits(pagination.currentPage + 1, searchTerm)}
+              disabled={!pagination.hasNext}
+              className="px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: pagination.hasNext ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

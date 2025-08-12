@@ -3,7 +3,6 @@ import Layout from './components/Layout';
 import { routes } from './routes';
 import { Toaster } from 'sonner';
 
-// Function to recursively create route objects with nested children
 function createRouteConfig(routes) {
   return routes.map((route) => {
     const routeConfig = {
@@ -11,12 +10,10 @@ function createRouteConfig(routes) {
       element: route.element,
     };
 
-    // Handle index route
     if (route.index) {
       routeConfig.index = route.index;
     }
 
-    // Handle nested children routes
     if (route.children && route.children.length > 0) {
       routeConfig.children = createRouteConfig(route.children);
     }
@@ -37,8 +34,8 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-    <Toaster richColors position='bottom-left'/>
-       <RouterProvider router={router} />;
+      <Toaster richColors position='bottom-left'/>
+      <RouterProvider router={router} />;
     </>
   ) 
 

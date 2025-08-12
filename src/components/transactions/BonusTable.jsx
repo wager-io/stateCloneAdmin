@@ -6,55 +6,55 @@ export default function BonusTable() {
 
   // Sample bonus data
   const [bonuses] = useState([
-    { 
-      transactionId: 'TXN-BON-001', 
-      date: '2024-01-15 20:15:45', 
-      bonusPayout: 150.00, 
-      bonusType: 'Welcome Bonus', 
-      status: 'Credited' 
-    },
-    { 
-      transactionId: 'TXN-BON-002', 
-      date: '2024-01-15 14:30:22', 
-      bonusPayout: 75.50, 
-      bonusType: 'Deposit Match', 
-      status: 'Pending' 
-    },
-    { 
-      transactionId: 'TXN-BON-003', 
-      date: '2024-01-14 18:45:10', 
-      bonusPayout: 25.00, 
-      bonusType: 'Free Spins', 
-      status: 'Credited' 
-    },
-    { 
-      transactionId: 'TXN-BON-004', 
-      date: '2024-01-14 12:20:33', 
-      bonusPayout: 200.00, 
-      bonusType: 'Loyalty Reward', 
-      status: 'Expired' 
-    },
-    { 
-      transactionId: 'TXN-BON-005', 
-      date: '2024-01-13 16:55:18', 
-      bonusPayout: 50.00, 
-      bonusType: 'Referral Bonus', 
-      status: 'Credited' 
-    },
-    { 
-      transactionId: 'TXN-BON-006', 
-      date: '2024-01-13 10:30:55', 
-      bonusPayout: 100.00, 
-      bonusType: 'Weekly Cashback', 
-      status: 'Processing' 
-    },
-    { 
-      transactionId: 'TXN-BON-007', 
-      date: '2024-01-12 22:15:40', 
-      bonusPayout: 300.00, 
-      bonusType: 'VIP Exclusive', 
-      status: 'Credited' 
-    },
+    // { 
+    //   transactionId: 'TXN-BON-001', 
+    //   date: '2024-01-15 20:15:45', 
+    //   bonusPayout: 150.00, 
+    //   bonusType: 'Welcome Bonus', 
+    //   status: 'Credited' 
+    // },
+    // { 
+    //   transactionId: 'TXN-BON-002', 
+    //   date: '2024-01-15 14:30:22', 
+    //   bonusPayout: 75.50, 
+    //   bonusType: 'Deposit Match', 
+    //   status: 'Pending' 
+    // },
+    // { 
+    //   transactionId: 'TXN-BON-003', 
+    //   date: '2024-01-14 18:45:10', 
+    //   bonusPayout: 25.00, 
+    //   bonusType: 'Free Spins', 
+    //   status: 'Credited' 
+    // },
+    // { 
+    //   transactionId: 'TXN-BON-004', 
+    //   date: '2024-01-14 12:20:33', 
+    //   bonusPayout: 200.00, 
+    //   bonusType: 'Loyalty Reward', 
+    //   status: 'Expired' 
+    // },
+    // { 
+    //   transactionId: 'TXN-BON-005', 
+    //   date: '2024-01-13 16:55:18', 
+    //   bonusPayout: 50.00, 
+    //   bonusType: 'Referral Bonus', 
+    //   status: 'Credited' 
+    // },
+    // { 
+    //   transactionId: 'TXN-BON-006', 
+    //   date: '2024-01-13 10:30:55', 
+    //   bonusPayout: 100.00, 
+    //   bonusType: 'Weekly Cashback', 
+    //   status: 'Processing' 
+    // },
+    // { 
+    //   transactionId: 'TXN-BON-007', 
+    //   date: '2024-01-12 22:15:40', 
+    //   bonusPayout: 300.00, 
+    //   bonusType: 'VIP Exclusive', 
+    //   status: 'Credited' 
+    // },
   ]);
 
   const filteredBonuses = bonuses.filter(bonus =>

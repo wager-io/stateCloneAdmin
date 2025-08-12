@@ -1,34 +1,35 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-
 import Cookies from 'js-cookie';
-import axios from 'axios';
 import api from '../api/axios';
-
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [adminData, setAdminData] = useState(null); // User state
+  const [adminData, setAdminData] = useState(null); 
+  const [appLoad, setAppLoad] = useState(true)
+  const [statsData, setStatsData] = useState({})
 
 
   const fetchAdminData = async () => {
     try {
-      const token = Cookies.get('token');   
-      console.log('Token:', token); // Debugging line
-        if (!token) {
-            setAdminData(null);
-            return;
-        }
+      const token = Cookies.get('token'); 
+      if (!token) {
+        setAdminData(null);
+        setAppLoad(false);
+        return;
+      }
       const response = await api.get('/admin/profile')
-        if (response.status === 200) {
-            setAdminData(response.data);
-        } else {
-            setAdminData(null);
-        }
-    } catch (error) {
-      console.error('Failed to fetch admin data:', error);
-      setAdminData(null);
-    }
+      if (response.success) {
+        setAdminData(response.data);
+      } else {
+          setAdminData(null);
+      }
+      } catch (error) {
+        console.error('Failed to fetch admin data:', error);
+        setAdminData(null);
+      } finally {
+        setAppLoad(false);
+      }
     };
 
     useEffect(() => {
@@ -36,8 +37,10 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
 
+
+
   return (
-    <AuthContext.Provider value={{adminData }}>
+    <AuthContext.Provider value={{adminData, setAdminData, appLoad, }}>
       {children}
     </AuthContext.Provider>
   );

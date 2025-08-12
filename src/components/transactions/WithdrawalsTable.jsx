@@ -1,59 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Visibility, Search } from '@mui/icons-material';
+import ContentLoader from 'react-content-loader';
+import api from '../../api/axios';
 
 export default function WithdrawalsTable() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNext: false,
+    hasPrev: false
+  });
 
-  // Sample withdrawals data
-  const [withdrawals] = useState([
-    { 
-      transactionId: 'TXN-WTH-001', 
-      transactionHash: '0x8f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b', 
-      amount: 2500, 
-      balance: 42500, 
-      status: 'Completed', 
-      date: '2024-01-15 16:22:15' 
-    },
-    { 
-      transactionId: 'TXN-WTH-002', 
-      transactionHash: '0x2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d5c', 
-      amount: 5000, 
-      balance: 40000, 
-      status: 'Pending', 
-      date: '2024-01-15 14:10:33' 
-    },
-    { 
-      transactionId: 'TXN-WTH-003', 
-      transactionHash: '0x3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e6d', 
-      amount: 1800, 
-      balance: 45000, 
-      status: 'Processing', 
-      date: '2024-01-14 11:45:20' 
-    },
-    { 
-      transactionId: 'TXN-WTH-004', 
-      transactionHash: '0x4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f7e', 
-      amount: 3200, 
-      balance: 46800, 
-      status: 'Failed', 
-      date: '2024-01-14 09:15:44' 
-    },
-    { 
-      transactionId: 'TXN-WTH-005', 
-      transactionHash: '0x5c4b3a2918f7e6d5c4b3a2918f7e6d5c4b3a2918f', 
-      amount: 750, 
-      balance: 50000, 
-      status: 'Completed', 
-      date: '2024-01-13 20:30:12' 
-    },
-  ]);
+  // Fetch withdrawals from API
+  const fetchWithdrawals = async (page = 1, search = '') => {
+    setLoading(true);
+    try {
+      const response = await api.get('/admin/transactions/withdrawals', {
+        params: {
+          page,
+          limit: 20,
+          search
+        }
+      });
+      
+      if (response.success) {
+        setWithdrawals(response.data);
+        setPagination(response.pagination);
+      }
+    } catch (error) {
+      console.error('Error fetching withdrawals:', error);
+    }
+    setLoading(false);
+  };
 
-  const filteredWithdrawals = withdrawals.filter(withdrawal =>
-    withdrawal.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Initial load
+  useEffect(() => {
+    fetchWithdrawals();
+  }, []);
+
+  // Search functionality
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      fetchWithdrawals(1, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchTerm]);
 
   const truncateHash = (hash) => {
+    if (!hash) return 'N/A';
     return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
   };
 
   const getStatusColor = (status) => {
@@ -127,8 +142,31 @@ export default function WithdrawalsTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredWithdrawals.length > 0 ? (
-              filteredWithdrawals.map((withdrawal, index) => (
+            {loading ? (
+              // Loading skeleton rows
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                  <td colSpan="7" className="py-4 px-4">
+                    <ContentLoader 
+                      speed={2}
+                      width="100%"
+                      height={50}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      foregroundColor="rgba(255, 255, 255, 0.2)"
+                    >
+                      <rect x="0" y="10" rx="3" ry="3" width="120" height="12" />
+                      <rect x="140" y="10" rx="3" ry="3" width="100" height="12" />
+                      <rect x="260" y="10" rx="3" ry="3" width="80" height="12" />
+                      <rect x="360" y="10" rx="3" ry="3" width="90" height="12" />
+                      <rect x="470" y="10" rx="15" ry="15" width="60" height="12" />
+                      <rect x="550" y="10" rx="3" ry="3" width="120" height="12" />
+                      <rect x="690" y="10" rx="3" ry="3" width="40" height="12" />
+                    </ContentLoader>
+                  </td>
+                </tr>
+              ))
+            ) : withdrawals.length > 0 ? (
+              withdrawals.map((withdrawal, index) => (
                 <tr 
                   key={withdrawal.transactionId} 
                   className="border-b transition-all duration-200 hover:bg-opacity-50"
@@ -160,7 +198,7 @@ export default function WithdrawalsTable() {
                     </span>
                   </td>
                   <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-dark)' }}>
-                    {withdrawal.date}
+                    {formatDate(withdrawal.date)}
                   </td>
                   <td className="py-4 px-4 text-center">
                     <button 
@@ -195,6 +233,44 @@ export default function WithdrawalsTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {!loading && withdrawals.length > 0 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm" style={{ color: 'var(--text-dark)' }}>
+            Showing {((pagination.currentPage - 1) * 20) + 1} to {Math.min(pagination.currentPage * 20, pagination.totalCount)} of {pagination.totalCount} withdrawals
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchWithdrawals(pagination.currentPage - 1, searchTerm)}
+              disabled={!pagination.hasPrev}
+              className="px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: pagination.hasPrev ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.1)', color: 'var(--text-light)' }}>
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => fetchWithdrawals(pagination.currentPage + 1, searchTerm)}
+              disabled={!pagination.hasNext}
+              className="px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: pagination.hasNext ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import ForgetPassword from './ForgetPassword'; 
+import api from "../../api/axios"
 import {toast} from 'sonner'
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from "react-router-dom"
+import Cookies from 'js-cookie';
 
 export default function LoginPage() {
+  const { setAdminData } = useAuth()
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,13 +26,27 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Login attempt:', formData);
+  const handleSubmit = async() => {
+    try{
+      const response = await api.post("/admin/login", {
+        email: formData?.email, password: formData?.password
+      })
+      if(response?.success){
+        toast.success(response?.message)
+        setAdminData(response?.data?.admin)
+        Cookies.set('token', response?.data?.token);
+        navigate("/dashboard")
+        return
+      }
+    }
+    catch(err){
+      if(!err?.success){
+        toast.error(err?.message)
+        return
+      }
+    }
   };
 
-  const handleSocialLogin = (provider) => {
-    console.log(`${provider} login clicked`);
-  };
 
   
   const handleForgotPassword = () => {
@@ -141,7 +161,7 @@ export default function LoginPage() {
 
           
           <div className="flex items-center justify-between">
-            <label className="flex items-center">
+            {/* <label className="flex items-center">
               <input
                 type="checkbox"
                 name="remember"
@@ -156,14 +176,14 @@ export default function LoginPage() {
               >
                 Remember me
               </span>
-            </label>
-            <button 
+            </label> */}
+            {/* <button 
               onClick={handleForgotPassword}
               className="text-sm hover:underline"
               style={{ color: 'var(--accent-purple)' }}
             >
               Forgot password?
-            </button>
+            </button> */}
           </div>
 
       

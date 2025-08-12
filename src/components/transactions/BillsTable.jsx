@@ -1,64 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Visibility, Search } from '@mui/icons-material';
+import ContentLoader from 'react-content-loader';
+import api from '../../api/axios';
 
 export default function BillsTable() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNext: false,
+    hasPrev: false
+  });
 
-  // Sample bills data
-  const [bills] = useState([
-    { 
-      transactionId: 'TXN-BILL-001', 
-      date: '2024-01-15 18:45:30', 
-      transactionType: 'Service Fee', 
-      amount: 25.00, 
-      payout: 0, 
-      status: 'Paid' 
-    },
-    { 
-      transactionId: 'TXN-BILL-002', 
-      date: '2024-01-15 12:30:15', 
-      transactionType: 'Processing Fee', 
-      amount: 15.50, 
-      payout: 0, 
-      status: 'Pending' 
-    },
-    { 
-      transactionId: 'TXN-BILL-003', 
-      date: '2024-01-14 16:20:44', 
-      transactionType: 'Monthly Subscription', 
-      amount: 49.99, 
-      payout: 0, 
-      status: 'Paid' 
-    },
-    { 
-      transactionId: 'TXN-BILL-004', 
-      date: '2024-01-14 09:15:22', 
-      transactionType: 'Transaction Fee', 
-      amount: 8.75, 
-      payout: 0, 
-      status: 'Failed' 
-    },
-    { 
-      transactionId: 'TXN-BILL-005', 
-      date: '2024-01-13 14:55:10', 
-      transactionType: 'Maintenance Fee', 
-      amount: 12.00, 
-      payout: 0, 
-      status: 'Paid' 
-    },
-    { 
-      transactionId: 'TXN-BILL-006', 
-      date: '2024-01-13 11:30:33', 
-      transactionType: 'Currency Conversion', 
-      amount: 5.25, 
-      payout: 0, 
-      status: 'Disputed' 
-    },
-  ]);
+  // Fetch bills from API
+  const fetchBills = async (page = 1, search = '') => {
+    setLoading(true);
+    try {
+      const response = await api.get('/admin/transactions/bills', {
+        params: {
+          page,
+          limit: 20,
+          search
+        }
+      });
+      
+      if (response.success) {
+        setBills(response.data);
+        setPagination(response.pagination);
+      }
+    } catch (error) {
+      console.error('Error fetching bills:', error);
+    }
+    setLoading(false);
+  };
 
-  const filteredBills = bills.filter(bill =>
-    bill.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Initial load
+  useEffect(() => {
+    fetchBills();
+  }, []);
+
+  // Search functionality
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      fetchBills(1, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchTerm]);
+
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -143,8 +149,31 @@ export default function BillsTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredBills.length > 0 ? (
-              filteredBills.map((bill, index) => (
+            {loading ? (
+              // Loading skeleton rows
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                  <td colSpan="7" className="py-4 px-4">
+                    <ContentLoader 
+                      speed={2}
+                      width="100%"
+                      height={50}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      foregroundColor="rgba(255, 255, 255, 0.2)"
+                    >
+                      <rect x="0" y="10" rx="3" ry="3" width="120" height="12" />
+                      <rect x="140" y="10" rx="3" ry="3" width="120" height="12" />
+                      <rect x="280" y="10" rx="15" ry="15" width="100" height="12" />
+                      <rect x="400" y="10" rx="3" ry="3" width="80" height="12" />
+                      <rect x="500" y="10" rx="3" ry="3" width="60" height="12" />
+                      <rect x="580" y="10" rx="15" ry="15" width="60" height="12" />
+                      <rect x="660" y="10" rx="3" ry="3" width="40" height="12" />
+                    </ContentLoader>
+                  </td>
+                </tr>
+              ))
+            ) : bills.length > 0 ? (
+              bills.map((bill, index) => (
                 <tr 
                   key={bill.transactionId} 
                   className="border-b transition-all duration-200 hover:bg-opacity-50"
@@ -157,7 +186,7 @@ export default function BillsTable() {
                     {bill.transactionId}
                   </td>
                   <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-dark)' }}>
-                    {bill.date}
+                    {formatDate(bill.date)}
                   </td>
                   <td className="py-4 px-4">
                     <span 
@@ -171,11 +200,16 @@ export default function BillsTable() {
                       {bill.transactionType}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm font-bold" style={{ color: '#ef4444' }}>
-                    -${bill.amount.toFixed(2)}
+                  <td className="py-4 px-4 text-sm font-bold" style={{ 
+                    color: (bill.amount || 0) < 0 ? 'var(--success-green)' : '#ef4444' 
+                  }}>
+                    {(bill.amount || 0) < 0 
+                      ? `+$${Math.abs(bill.amount).toFixed(2)}` 
+                      : `-$${bill.amount?.toFixed(2) || '0.00'}`
+                    }
                   </td>
                   <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-dark)' }}>
-                    ${bill.payout.toFixed(2)}
+                    ${bill.payout?.toFixed(2) || '0.00'}
                   </td>
                   <td className="py-4 px-4">
                     <span 
@@ -218,6 +252,44 @@ export default function BillsTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {!loading && bills.length > 0 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm" style={{ color: 'var(--text-dark)' }}>
+            Showing {((pagination.currentPage - 1) * 20) + 1} to {Math.min(pagination.currentPage * 20, pagination.totalCount)} of {pagination.totalCount} bills
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchBills(pagination.currentPage - 1, searchTerm)}
+              disabled={!pagination.hasPrev}
+              className="px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: pagination.hasPrev ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.1)', color: 'var(--text-light)' }}>
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => fetchBills(pagination.currentPage + 1, searchTerm)}
+              disabled={!pagination.hasNext}
+              className="px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: pagination.hasNext ? 'var(--accent-purple)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,50 @@
 import React from 'react';
+import ContentLoader from 'react-content-loader';
 
-export default function MetricCard({ title, value, icon, trend, trendUp, description }) {
+export default function MetricCard({ title, value, icon, trend, trendUp, description, isloading }) {
+  if (!value) {
+    return (
+      <div 
+        className="relative p-5 w-full rounded-xl transition-all duration-300"
+        style={{
+          background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+          border: '1px solid var(--border-color)',
+          boxShadow: `
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            0 15px 12px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.3)
+          `,
+          minHeight: '120px'
+        }}
+      >
+        <ContentLoader 
+          speed={2}
+          width="100%"
+          height={100}
+          backgroundColor="rgba(255, 255, 255, 0.1)"
+          foregroundColor="rgba(255, 255, 255, 0.2)"
+          style={{ width: '100%', height: '100%' }}
+        >
+          {/* Value placeholder */}
+          <rect x="0" y="5" rx="4" ry="4" width="120" height="24" />
+          
+          {/* Trend placeholder */}
+          <rect x="220" y="8" rx="3" ry="3" width="60" height="16" />
+          
+          {/* Icon placeholder */}
+          <circle cx="25" cy="65" r="20" />
+          
+          {/* Title placeholder */}
+          <rect x="60" y="50" rx="3" ry="3" width="140" height="14" />
+          
+          {/* Description placeholder */}
+          <rect x="60" y="70" rx="3" ry="3" width="100" height="12" />
+        </ContentLoader>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="relative p-5 w-full rounded-xl transition-all duration-300 hover:scale-105 hover:-translate-y-2 cursor-pointer group overflow-hidden"

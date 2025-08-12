@@ -19,3 +19,6 @@ body{
     background: var(--primary-bg);
     font-family: "Poppins", Arial, Helvetica, sans-serif, "Nunito";
 }
+button{
+  cursor: pointer;
+}

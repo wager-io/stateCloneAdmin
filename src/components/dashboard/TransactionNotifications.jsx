@@ -1,7 +1,8 @@
 import React from 'react';
 import { Info, TrendingUp, TrendingDown } from '@mui/icons-material';
+import ContentLoader from 'react-content-loader';
 
-export default function TransactionNotifications({ transactions }) {
+export default function TransactionNotifications({ transactions, loading }) {
   return (
     <div 
       className="rounded-xl p-6"
@@ -25,8 +26,51 @@ export default function TransactionNotifications({ transactions }) {
         Recent Transactions
       </h3>
       
-      <div className="space-y-3  pr-2">
-        {transactions.map((transaction, index) => (
+      <div className="space-y-3 pr-2">
+        {loading ? (
+          // Loading skeleton
+          Array.from({ length: 3 }).map((_, index) => (
+            <div 
+              key={index}
+              className="p-4 rounded-lg"
+              style={{
+                background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
+                border: '1px solid var(--border-color)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <ContentLoader 
+                speed={2}
+                width="100%"
+                height={80}
+                backgroundColor="rgba(255, 255, 255, 0.1)"
+                foregroundColor="rgba(255, 255, 255, 0.2)"
+              >
+                <circle cx="15" cy="20" r="5" />
+                <rect x="30" y="15" rx="3" ry="3" width="80" height="12" />
+                <rect x="130" y="15" rx="3" ry="3" width="100" height="12" />
+                <rect x="0" y="40" rx="3" ry="3" width="60" height="10" />
+                <rect x="80" y="40" rx="3" ry="3" width="80" height="10" />
+                <rect x="180" y="40" rx="3" ry="3" width="50" height="10" />
+                <rect x="250" y="15" rx="3" ry="3" width="80" height="15" />
+              </ContentLoader>
+            </div>
+          ))
+        ) : transactions && transactions.length > 0 ? (
+          transactions.map((transaction, index) => {
+            const formatDate = (dateString) => {
+              try {
+                return new Date(dateString).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: '2-digit',
+                  year: 'numeric'
+                });
+              } catch {
+                return dateString;
+              }
+            };
+
+            return (
           <div 
             key={index}
             className="p-4 rounded-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer"
@@ -50,7 +94,7 @@ export default function TransactionNotifications({ transactions }) {
                     className="text-xs font-mono"
                     style={{ color: 'var(--text-dark)' }}
                   >
-                    {transaction.userId}
+                    {transaction.userId || transaction.id}
                   </span>
                   <span 
                     className="font-medium"
@@ -89,7 +133,7 @@ export default function TransactionNotifications({ transactions }) {
                     className="text-sm"
                     style={{ color: 'var(--text-dark)' }}
                   >
-                    {transaction.date}
+                    {formatDate(transaction.date)}
                   </span>
                   
                   <span 
@@ -144,7 +188,33 @@ export default function TransactionNotifications({ transactions }) {
               </div>
             </div>
           </div>
-        ))}
+            );
+          })
+        ) : (
+          // Empty state
+          <div className="py-12 text-center">
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <div 
+                className="text-6xl opacity-30"
+                style={{ color: 'var(--text-dark)' }}
+              >
+                💸
+              </div>
+              <p 
+                className="text-lg font-medium"
+                style={{ color: 'var(--text-dark)' }}
+              >
+                No transactions found
+              </p>
+              <p 
+                className="text-sm"
+                style={{ color: 'var(--text-dark)' }}
+              >
+                Recent transactions will appear here
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,15 +11,18 @@ import {
   Person,
   PersonOff,
   Block,
-  AdminPanelSettings
+  Verified,
+  VerifiedUser,
+  Groups,
+  TrendingUp,
+  AccountBalance,
+  VerifiedUserOutlined
 } from '@mui/icons-material';
 import api from "../api/axios";
-import ViewAdminModal from '../components/admins/ViewAdminModal';
-import CreateAdminModal from '../components/admins/CreateAdminModal';
 
-export default function Admins() {
-  const [adminsData, setAdminsData] = useState({
-    admins: [],
+export default function Users() {
+  const [usersData, setUsersData] = useState({
+    users: [],
     pagination: {},
     statistics: {},
     filters: {}
@@ -28,26 +31,12 @@ export default function Admins() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [roleFilter, setRoleFilter] = useState('all');
-  
-  // Modal states
-  const [showViewModal, setShowViewModal] = useState(false);
+  const [countryFilter, setCountryFilter] = useState('all');
+  const [verificationFilter, setVerificationFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
-  const [loadingAdmin, setLoadingAdmin] = useState(false);
 
-  // Create form state
-  const [createForm, setCreateForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    role: 'admin'
-  });
-  const [createLoading, setCreateLoading] = useState(false);
-
-  const fetchAdmins = async (page = 1, search = '', status = 'all', role = 'all') => {
+  // Fetch users data
+  const fetchUsers = async (page = 1, search = '', status = 'all', country = 'all', is_verified = 'all') => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -55,102 +44,32 @@ export default function Admins() {
         limit: '10',
         ...(search && { search }),
         ...(status !== 'all' && { status }),
-        ...(role !== 'all' && { role }),
+        ...(country !== 'all' && { country }),
+        ...(is_verified !== 'all' && { is_verified }),
         sortBy: 'createdAt',
         sortOrder: 'desc'
       });
 
-      const response = await api.get(`/admin/get-all-admin?${params}`);
+      const response = await api.get(`/admin/users?${params}`);
       if (response.success) {
-        setAdminsData(response.data);
+        setUsersData(response.data);
       }
     } catch (error) {
-      console.error('Error fetching admins:', error);
+      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch admin by ID
-  const fetchAdminById = async (adminId) => {
-    try {
-      setLoadingAdmin(true);
-      const response = await api.get(`/admin/get-admin/${adminId}`);
-      if (response.success) {
-        setSelectedAdmin(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching admin:', error);
-    } finally {
-      setLoadingAdmin(false);
-    }
-  };
-
-  // Create new admin
-  const handleCreateAdmin = async (e) => {
-    e.preventDefault();
-    try {
-      setCreateLoading(true);
-      const response = await api.post('/admin/create', createForm);
-      if (response.success) {
-        setShowCreateModal(false);
-        setCreateForm({
-          username: '',
-          email: '',
-          password: '',
-          firstName: '',
-          lastName: '',
-          role: 'admin'
-        });
-        fetchAdmins(currentPage, searchTerm, statusFilter, roleFilter);
-      }
-    } catch (error) {
-      console.error('Error creating admin:', error);
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
-  // Handle view admin
-  const handleViewAdmin = (adminId) => {
-    setShowViewModal(true);
-    fetchAdminById(adminId);
-    
-    // Update URL with admin ID
-    const url = new URL(window.location);
-    url.searchParams.set('adminId', adminId);
-    window.history.pushState({}, '', url);
-  };
-
-  // Close view modal
-  const closeViewModal = () => {
-    setShowViewModal(false);
-    setSelectedAdmin(null);
-    
-    // Remove admin ID from URL
-    const url = new URL(window.location);
-    url.searchParams.delete('adminId');
-    window.history.pushState({}, '', url);
-  };
-
-  // Check URL for admin ID on component mount
+  // Fetch users on component mount and when filters change
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const adminId = urlParams.get('adminId');
-    if (adminId) {
-      handleViewAdmin(adminId);
-    }
-  }, []);
-
-  // Fetch admins on component mount and when filters change
-  useEffect(() => {
-    fetchAdmins(currentPage, searchTerm, statusFilter, roleFilter);
-  }, [currentPage, searchTerm, statusFilter, roleFilter]);
+    fetchUsers(currentPage, searchTerm, statusFilter, countryFilter, verificationFilter);
+  }, [currentPage, searchTerm, statusFilter, countryFilter, verificationFilter]);
 
   // Reset page when search/filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, roleFilter]);
+  }, [searchTerm, statusFilter, countryFilter, verificationFilter]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -158,7 +77,7 @@ export default function Admins() {
         return <Person style={{ color: '#22c55e', fontSize: '18px' }} />;
       case 'inactive':
         return <PersonOff style={{ color: '#f59e0b', fontSize: '18px' }} />;
-      case 'suspended':
+      case 'disabled':
         return <Block style={{ color: '#ef4444', fontSize: '18px' }} />;
       default:
         return <Person style={{ color: 'var(--text-dark)', fontSize: '18px' }} />;
@@ -171,26 +90,40 @@ export default function Admins() {
         return { color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e' };
       case 'inactive':
         return { color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid #f59e0b' };
-      case 'suspended':
+      case 'disabled':
         return { color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444' };
       default:
         return { color: 'var(--text-dark)', background: 'rgba(148, 163, 184, 0.1)', border: '1px solid var(--text-dark)' };
     }
   };
 
-  const getRoleColor = (role) => {
-    switch (role) {
-      case 'super_admin':
-        return { color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid #8b5cf6' };
-      case 'admin':
-        return { color: '#06b6d4', background: 'rgba(6, 182, 212, 0.1)', border: '1px solid #06b6d4' };
-      case 'moderator':
-        return { color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981' };
-      case 'support':
-        return { color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid #f59e0b' };
-      default:
-        return { color: 'var(--text-dark)', background: 'rgba(148, 163, 184, 0.1)', border: '1px solid var(--text-dark)' };
-    }
+  const getVerificationIcon = (isVerified) => {
+    return isVerified ? 
+      <VerifiedUser style={{ color: '#22c55e', fontSize: '18px' }} /> :
+      <Person style={{ color: '#f59e0b', fontSize: '18px' }} />;
+  };
+
+  const truncateUserId = (userId) => {
+    return userId.length > 8 ? `${userId.slice(-8).toUpperCase()}` : userId.toUpperCase();
+  };
+
+  const getCountryFlag = (country) => {
+    const flags = {
+      'Nigeria': '🇳🇬',
+      'USA': '🇺🇸',
+      'UK': '🇬🇧', 
+      'Canada': '🇨🇦',
+      'Australia': '🇦🇺',
+      'Germany': '🇩🇪',
+      'France': '🇫🇷',
+      'Japan': '🇯🇵',
+      'Italy': '🇮🇹',
+      'Spain': '🇪🇸',
+      'Brazil': '🇧🇷',
+      'Netherlands': '🇳🇱',
+      'Sweden': '🇸🇪'
+    };
+    return flags[country] || '🌍';
   };
 
   return (
@@ -204,9 +137,115 @@ export default function Admins() {
             textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
           }}
         >
-          Admins Management
+          Users Management
         </h1>
+        <p 
+          className="text-lg"
+          style={{ color: 'var(--text-dark)' }}
+        >
+          Manage and monitor all registered users
+        </p>
       </div>
+
+      {/* Statistics Cards */}
+      {usersData.statistics?.overview && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <div 
+            className="rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+              border: '1px solid var(--border-color)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <Groups style={{ color: 'var(--accent-purple)', fontSize: '24px' }} />
+              <div>
+                <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Total Users</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                  {usersData.statistics.overview.totalUsers?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+              border: '1px solid var(--border-color)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <Person style={{ color: '#22c55e', fontSize: '24px' }} />
+              <div>
+                <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Active Users</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                  {usersData.statistics.overview.activeUsers?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+              border: '1px solid var(--border-color)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <VerifiedUser style={{ color: '#06b6d4', fontSize: '24px' }} />
+              <div>
+                <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Verified Users</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                  {usersData.statistics.overview.verifiedUsers?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+              border: '1px solid var(--border-color)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <PersonOff style={{ color: '#f59e0b', fontSize: '24px' }} />
+              <div>
+                <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Unverified</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                  {usersData.statistics.overview.unverifiedUsers?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            className="rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+              border: '1px solid var(--border-color)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <AccountBalance style={{ color: '#10b981', fontSize: '24px' }} />
+              <div>
+                <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Total Balance</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                  ${usersData.statistics.overview.totalBalance?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filter Section */}
       <div 
@@ -229,7 +268,7 @@ export default function Admins() {
             </div>
             <input
               type="text"
-              placeholder="Search by name, email, or username..."
+              placeholder="Search by User ID or Username..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -260,12 +299,12 @@ export default function Admins() {
               <option value="all" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>All Status</option>
               <option value="active" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Active</option>
               <option value="inactive" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Inactive</option>
-              <option value="suspended" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Suspended</option>
+              <option value="disabled" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Disabled</option>
             </select>
 
             <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              value={verificationFilter}
+              onChange={(e) => setVerificationFilter(e.target.value)}
               className="px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-purple-500"
               style={{
                 background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
@@ -274,15 +313,13 @@ export default function Admins() {
                 fontSize: '14px'
               }}
             >
-              <option value="all" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>All Roles</option>
-              <option value="super_admin" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Super Admin</option>
-              <option value="admin" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Admin</option>
-              <option value="moderator" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Moderator</option>
-              <option value="support" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Support</option>
+              <option value="all" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>All Verification</option>
+              <option value="true" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Verified</option>
+              <option value="false" style={{ background: '#1a1d2e', color: 'var(--text-light)' }}>Unverified</option>
             </select>
           </div>
 
-          {/* Create Admin Button */}
+          {/* Create User Button */}
           <button
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
@@ -294,14 +331,24 @@ export default function Admins() {
             }}
           >
             <Add fontSize="small" />
-            Create Admin
+            Create User
           </button>
 
-   
+          {/* Results Count */}
+          <div 
+            className="text-sm font-medium px-4 py-2 rounded-lg"
+            style={{ 
+              color: 'var(--text-light)',
+              background: 'rgba(106, 13, 173, 0.1)',
+              border: '1px solid var(--accent-purple)'
+            }}
+          >
+            {usersData.pagination?.totalCount || 0} Users
+          </div>
         </div>
       </div>
 
-      {/* Admins Table */}
+      {/* Users Table */}
       <div 
         className="rounded-xl overflow-hidden"
         style={{
@@ -322,7 +369,7 @@ export default function Admins() {
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
             }}
           >
-            Admins List
+            Users List
           </h3>
         </div>
 
@@ -337,7 +384,13 @@ export default function Admins() {
                   className="text-left py-4 px-6 text-sm font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
-                  Admin ID
+                  User ID
+                </th>
+                <th 
+                  className="text-left py-4 px-6 text-sm font-semibold"
+                  style={{ color: 'var(--text-light)' }}
+                >
+                  Username
                 </th>
                 <th 
                   className="text-left py-4 px-6 text-sm font-semibold"
@@ -349,19 +402,19 @@ export default function Admins() {
                   className="text-left py-4 px-6 text-sm font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
-                  Email
+                  Country
                 </th>
                 <th 
                   className="text-left py-4 px-6 text-sm font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
-                  Role
+                  Balance
                 </th>
                 <th 
                   className="text-left py-4 px-6 text-sm font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
-                  Last Login
+                  Verification
                 </th>
                 <th 
                   className="text-left py-4 px-6 text-sm font-semibold"
@@ -381,17 +434,17 @@ export default function Admins() {
               {loading ? (
                 <tr>
                   <td 
-                    colSpan="7" 
+                    colSpan="8" 
                     className="py-12 text-center"
                     style={{ color: 'var(--text-dark)' }}
                   >
-                    Loading admins...
+                    Loading users...
                   </td>
                 </tr>
-              ) : adminsData.admins?.length > 0 ? (
-                adminsData.admins.map((admin, index) => (
+              ) : usersData.users?.length > 0 ? (
+                usersData.users.map((user, index) => (
                   <tr 
-                    key={admin._id} 
+                    key={user._id} 
                     className="border-b transition-all duration-200 hover:bg-opacity-50"
                     style={{ 
                       borderColor: 'var(--border-color)',
@@ -401,56 +454,72 @@ export default function Admins() {
                     <td 
                       className="py-4 px-6 text-sm font-mono"
                       style={{ color: 'var(--accent-purple)' }}
+                      title={user._id}
                     >
-                      {admin._id.slice(-8).toUpperCase()}
+                      {truncateUserId(user._id)}
                     </td>
                     <td 
                       className="py-4 px-6 text-sm font-medium"
                       style={{ color: 'var(--text-light)' }}
                     >
-                      {`${admin.firstName} ${admin.lastName}`}
+                      {user.username}
                     </td>
                     <td 
                       className="py-4 px-6 text-sm"
                       style={{ color: 'var(--text-light)' }}
                     >
-                      {admin.email}
-                    </td>
-                    <td className="py-4 px-6">
-                      <span 
-                        className="px-3 py-1 rounded-full text-xs font-medium"
-                        style={getRoleColor(admin.role)}
-                      >
-                        {admin.role.replace('_', ' ').toUpperCase()}
-                      </span>
+                      {user.firstName} {user.lastName}
                     </td>
                     <td 
                       className="py-4 px-6 text-sm"
                       style={{ color: 'var(--text-light)' }}
                     >
-                      {admin.lastLogin ? new Date(admin.lastLogin).toLocaleDateString() : 'Never'}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getCountryFlag(user.country)}</span>
+                        <span>{user.country}</span>
+                      </div>
+                    </td>
+                    <td 
+                      className="py-4 px-6 text-sm font-bold"
+                      style={{ color: 'var(--success-green)' }}
+                    >
+                      ${user.balance?.toLocaleString() || 0}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(admin.status)}
+                        {getVerificationIcon(user.is_verified)}
                         <span 
                           className="px-3 py-1 rounded-full text-xs font-medium"
-                          style={getStatusColor(admin.status)}
+                          style={{
+                            color: user.is_verified ? '#22c55e' : '#f59e0b',
+                            background: user.is_verified ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                            border: `1px solid ${user.is_verified ? '#22c55e' : '#f59e0b'}`
+                          }}
                         >
-                          {admin.status.toUpperCase()}
+                          {user.is_verified ? 'Verified' : 'Unverified'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(user.status)}
+                        <span 
+                          className="px-3 py-1 rounded-full text-xs font-medium"
+                          style={getStatusColor(user.status)}
+                        >
+                          {user.status?.toUpperCase()}
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-center">
                       <button 
-                        onClick={() => handleViewAdmin(admin._id)}
                         className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
                         style={{ 
                           color: 'var(--accent-purple)',
                           background: 'rgba(106, 13, 173, 0.1)',
                           border: '1px solid var(--accent-purple)'
                         }}
-                        title="View Admin Details"
+                        title="View User Details"
                       >
                         <Visibility fontSize="small" />
                       </button>
@@ -460,13 +529,13 @@ export default function Admins() {
               ) : (
                 <tr>
                   <td 
-                    colSpan="7" 
+                    colSpan="8" 
                     className="py-12 text-center"
                     style={{ color: 'var(--text-dark)' }}
                   >
                     <div className="flex flex-col items-center gap-3">
-                      <AdminPanelSettings style={{ fontSize: '48px', opacity: 0.5 }} />
-                      <p className="text-lg">No admins found</p>
+                      <Search style={{ fontSize: '48px', opacity: 0.5 }} />
+                      <p className="text-lg">No users found matching your criteria</p>
                       <p className="text-sm">Try adjusting your search or filter settings</p>
                     </div>
                   </td>
@@ -477,7 +546,7 @@ export default function Admins() {
         </div>
 
         {/* Pagination */}
-        {adminsData.pagination?.totalPages > 1 && (
+        {usersData.pagination?.totalPages > 1 && (
           <div 
             className="flex items-center justify-between p-6 border-t"
             style={{ borderColor: 'var(--border-color)' }}
@@ -486,7 +555,7 @@ export default function Admins() {
               className="text-sm"
               style={{ color: 'var(--text-dark)' }}
             >
-              Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, adminsData.pagination?.totalCount || 0)} of {adminsData.pagination?.totalCount || 0} admins
+              Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, usersData.pagination?.totalCount || 0)} of {usersData.pagination?.totalCount || 0} users
             </div>
 
             <div className="flex items-center gap-2">
@@ -519,9 +588,9 @@ export default function Admins() {
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, adminsData.pagination?.totalPages || 1) }, (_, i) => {
+                {Array.from({ length: Math.min(5, usersData.pagination?.totalPages || 1) }, (_, i) => {
                   const page = i + Math.max(1, currentPage - 2);
-                  if (page <= (adminsData.pagination?.totalPages || 1)) {
+                  if (page <= (usersData.pagination?.totalPages || 1)) {
                     return (
                       <button
                         key={page}
@@ -544,12 +613,12 @@ export default function Admins() {
               </div>
 
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, adminsData.pagination?.totalPages || 1))}
-                disabled={currentPage === (adminsData.pagination?.totalPages || 1)}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, usersData.pagination?.totalPages || 1))}
+                disabled={currentPage === (usersData.pagination?.totalPages || 1)}
                 className="p-2 rounded-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ 
                   color: 'var(--text-light)',
-                  background: currentPage === (adminsData.pagination?.totalPages || 1) ? 'rgba(148, 163, 184, 0.1)' : 'rgba(106, 13, 173, 0.1)',
+                  background: currentPage === (usersData.pagination?.totalPages || 1) ? 'rgba(148, 163, 184, 0.1)' : 'rgba(106, 13, 173, 0.1)',
                   border: '1px solid var(--border-color)'
                 }}
                 title="Next Page"
@@ -558,12 +627,12 @@ export default function Admins() {
               </button>
 
               <button
-                onClick={() => setCurrentPage(adminsData.pagination?.totalPages || 1)}
-                disabled={currentPage === (adminsData.pagination?.totalPages || 1)}
+                onClick={() => setCurrentPage(usersData.pagination?.totalPages || 1)}
+                disabled={currentPage === (usersData.pagination?.totalPages || 1)}
                 className="p-2 rounded-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ 
                   color: 'var(--text-light)',
-                  background: currentPage === (adminsData.pagination?.totalPages || 1) ? 'rgba(148, 163, 184, 0.1)' : 'rgba(106, 13, 173, 0.1)',
+                  background: currentPage === (usersData.pagination?.totalPages || 1) ? 'rgba(148, 163, 184, 0.1)' : 'rgba(106, 13, 173, 0.1)',
                   border: '1px solid var(--border-color)'
                 }}
                 title="Last Page"
@@ -574,23 +643,6 @@ export default function Admins() {
           </div>
         )}
       </div>
-
-      {/* Modals */}
-      <ViewAdminModal
-        showModal={showViewModal}
-        onClose={closeViewModal}
-        selectedAdmin={selectedAdmin}
-        loadingAdmin={loadingAdmin}
-      />
-
-      <CreateAdminModal
-        showModal={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        createForm={createForm}
-        setCreateForm={setCreateForm}
-        onSubmit={handleCreateAdmin}
-        createLoading={createLoading}
-      />
     </div>
   );
 }

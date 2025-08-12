@@ -6,29 +6,34 @@ import {
   Assignment as TasksIcon,
   CreditCard as TransactionsIcon,
   PersonAdd as PersonAddIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
+import Cookies from 'js-cookie';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from "react-router-dom"
 
 export default function Sidebar() {
-
+  const {setAdminData} = useAuth(); 
+  const navigate = useNavigate()
   const sidebarLinks = [
     { path: '/dashboard', name: 'Dashboard', icon: DashboardIcon },
     { path: '/users', name: 'Users', icon: UsersIcon },
-    { path: '/reports', name: 'Reports', icon: TasksIcon },
+    { path: '/game-reports', name: 'Games Reports', icon: TasksIcon },
     { path: '/transactions', name: 'Transactions', icon: TransactionsIcon },
-    { path: '/Admins', name: 'Admins', icon: PersonAddIcon }
+    { path: '/admins', name: 'Admins', icon: PersonAddIcon },
+    { path: '/chats', name: 'Live Support', icon: ChatIcon, messages: 2 }
   ];
 
   const handleLogout = () => {
-    // Add logout logic here (clear tokens, redirect, etc.)
-    console.log('Logging out...');
-    // Example: localStorage.removeItem('authToken');
-    // Example: navigate('/login');
+    setAdminData(null)
+    Cookies.remove("token")
+    navigate('/login');
   };
 
   return (
     <div 
-      className="fixed top-[60px] left-0 h-[calc(100vh-60px)] z-40 transition-all duration-300 w-full md:w-[232px]"
+      className="fixed top-[60px] left-0 h-[calc(100vh-60px)] z-40 transition-all duration-300 w-full md:w-[242px]"
       style={{
         background: 'var(--primary-bg)',
         borderRight: '1px solid var(--border-color)',

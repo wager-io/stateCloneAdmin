@@ -11,7 +11,7 @@ export const backendUrl = () => {
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   
   const _api = isLocalhost ? localhostUrl : remoteUrl;
-  return remoteUrl;
+  return _api;
 };
 
 const api = axios.create({
@@ -43,15 +43,12 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error('API Error:', error.response.data);
-      toast.error(error.response.data?.error);
     } else if (error.request) {
       console.error('Network Error:', error.request);
-      toast.error("Network Error");
     } else {
       console.error('Error:', error.message);
-      toast.error(error.message);
     }
-    return Promise.reject(error);
+    return Promise.reject(error?.response?.data);
   }
 );
 
