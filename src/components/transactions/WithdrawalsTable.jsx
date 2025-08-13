@@ -176,7 +176,7 @@ export default function WithdrawalsTable() {
                   }}
                 >
                   <td className="py-4 px-4 text-sm font-mono" style={{ color: 'var(--accent-purple)' }}>
-                    {withdrawal.transactionId}
+                    {truncateHash(withdrawal.transactionId)}
                   </td>
                   <td className="py-4 px-4 text-sm font-mono" style={{ color: 'var(--text-light)' }}>
                     <span title={withdrawal.transactionHash}>

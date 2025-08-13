@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Visibility, Search } from '@mui/icons-material';
+import { Visibility, Search, ContentCopy, Close } from '@mui/icons-material';
 import ContentLoader from 'react-content-loader';
+import { toast } from 'sonner';
 import api from '../../api/axios';
 
 export default function DepositsTable() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -74,16 +77,38 @@ export default function DepositsTable() {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Completed':
+    const statusLower = status?.toLowerCase();
+    switch (statusLower) {
+      case 'completed':
         return { color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e' };
-      case 'Pending':
+      case 'pending':
+      case 'processing':
         return { color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid #f59e0b' };
-      case 'Failed':
+      case 'failed':
+      case 'error':
         return { color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444' };
       default:
         return { color: 'var(--text-dark)', background: 'rgba(148, 163, 184, 0.1)', border: '1px solid var(--text-dark)' };
     }
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard');
+    } catch (error) {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const openModal = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedTransaction(null);
+    setShowModal(false);
   };
 
   return (
@@ -119,22 +144,22 @@ export default function DepositsTable() {
               style={{ borderColor: 'var(--accent-purple)' }}
             >
               <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
-                Transaction ID
-              </th>
-              <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
                 Transaction Hash
               </th>
               <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
                 Amount
               </th>
               <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
-                Balance After
+                Currency
               </th>
               <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
-                Status
+                Balance
               </th>
               <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
                 Date
+              </th>
+              <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
+                Status
               </th>
               <th className="text-center py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
                 Action
@@ -175,33 +200,56 @@ export default function DepositsTable() {
                     backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'transparent'
                   }}
                 >
-                  <td className="py-4 px-4 text-sm font-mono" style={{ color: 'var(--accent-purple)' }}>
-                    {deposit.transactionId}
-                  </td>
+                  {/* Transaction Hash with Copy Button */}
                   <td className="py-4 px-4 text-sm font-mono" style={{ color: 'var(--text-light)' }}>
-                    <span title={deposit.transactionHash}>
-                      {truncateHash(deposit.transactionHash)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span title={deposit.transactionHash}>
+                        {truncateHash(deposit.transactionHash)}
+                      </span>
+                      <button
+                        onClick={() => copyToClipboard(deposit.transactionHash)}
+                        className="p-1 rounded hover:bg-purple-500/20 transition-colors"
+                        title="Copy transaction hash"
+                      >
+                        <ContentCopy style={{ fontSize: '16px', color: 'var(--accent-purple)' }} />
+                      </button>
+                    </div>
                   </td>
+                  
+                  {/* Amount */}
                   <td className="py-4 px-4 text-sm font-bold" style={{ color: 'var(--success-green)' }}>
-                    +${deposit.amount.toLocaleString()}
+                    {deposit.metadata?.depositData?.amount || deposit.amount || '0'}
                   </td>
+                  
+                  {/* Currency */}
                   <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-light)' }}>
-                    ${deposit.balance.toLocaleString()}
+                    {deposit.currency}
                   </td>
+                  
+                  {/* Balance */}
+                  <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-light)' }}>
+                    {deposit.balance?.toLocaleString()}
+                  </td>
+                  
+                  {/* Date */}
+                  <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-dark)' }}>
+                    {formatDate(deposit.date)}
+                  </td>
+                  
+                  {/* Status */}
                   <td className="py-4 px-4">
                     <span 
-                      className="px-3 py-1 rounded-full text-xs font-medium"
+                      className="px-3 py-1 rounded-full text-xs font-medium capitalize"
                       style={getStatusColor(deposit.status)}
                     >
                       {deposit.status}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm" style={{ color: 'var(--text-dark)' }}>
-                    {formatDate(deposit.date)}
-                  </td>
+                  
+                  {/* Action */}
                   <td className="py-4 px-4 text-center">
                     <button 
+                      onClick={() => openModal(deposit)}
                       className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
                       style={{ 
                         color: 'var(--accent-purple)',
@@ -268,6 +316,235 @@ export default function DepositsTable() {
             >
               Next
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full-Screen Transaction Details Modal */}
+      {showModal && selectedTransaction && (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-50">
+          <div 
+            className="w-full h-full flex flex-col"
+            style={{ background: 'var(--primary-bg)' }}
+          >
+            {/* Modal Header */}
+            <div 
+              className="flex items-center justify-between p-6 border-b"
+              style={{ 
+                background: 'var(--secondary-bg)',
+                borderColor: 'var(--border-color)'
+              }}
+            >
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                Transaction Details
+              </h2>
+              <button
+                onClick={closeModal}
+                className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
+                style={{ 
+                  color: 'var(--text-light)',
+                  background: 'rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Close fontSize="large" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-4xl mx-auto space-y-8">
+                {/* Basic Transaction Info */}
+                <div 
+                  className="p-6 rounded-lg border"
+                  style={{ 
+                    background: 'var(--secondary-bg)',
+                    borderColor: 'var(--border-color)'
+                  }}
+                >
+                  <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
+                    Basic Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                        Transaction ID
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm" style={{ color: 'var(--accent-purple)' }}>
+                          {selectedTransaction.transactionId}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(selectedTransaction.transactionId)}
+                          className="p-1 rounded hover:bg-purple-500/20"
+                        >
+                          <ContentCopy style={{ fontSize: '16px', color: 'var(--accent-purple)' }} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                        Transaction Hash
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm break-all" style={{ color: 'var(--text-light)' }}>
+                          {selectedTransaction.transactionHash}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(selectedTransaction.transactionHash)}
+                          className="p-1 rounded hover:bg-purple-500/20 flex-shrink-0"
+                        >
+                          <ContentCopy style={{ fontSize: '16px', color: 'var(--accent-purple)' }} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                        Amount
+                      </label>
+                      <span className="text-lg font-bold" style={{ color: 'var(--success-green)' }}>
+                        {selectedTransaction.metadata?.depositData?.amount || selectedTransaction.amount || '0'} {selectedTransaction.currency}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                        Balance After
+                      </label>
+                      <span className="text-lg" style={{ color: 'var(--text-light)' }}>
+                        {selectedTransaction.balance?.toLocaleString()} {selectedTransaction.currency}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                        Status
+                      </label>
+                      <span 
+                        className="px-3 py-1 rounded-full text-sm font-medium capitalize"
+                        style={getStatusColor(selectedTransaction.status)}
+                      >
+                        {selectedTransaction.status}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                        Date
+                      </label>
+                      <span style={{ color: 'var(--text-light)' }}>
+                        {formatDate(selectedTransaction.date)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Information */}
+                {selectedTransaction.user && (
+                  <div 
+                    className="p-6 rounded-lg border"
+                    style={{ 
+                      background: 'var(--secondary-bg)',
+                      borderColor: 'var(--border-color)'
+                    }}
+                  >
+                    <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
+                      User Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                          User ID
+                        </label>
+                        <span style={{ color: 'var(--text-light)' }}>
+                          {selectedTransaction.user.id}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                          Username
+                        </label>
+                        <span style={{ color: 'var(--text-light)' }}>
+                          {selectedTransaction.user.username}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
+                          Email
+                        </label>
+                        <span style={{ color: 'var(--text-light)' }}>
+                          {selectedTransaction.user.email}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Deposit Details */}
+                {selectedTransaction.metadata?.depositData && (
+                  <div 
+                    className="p-6 rounded-lg border"
+                    style={{ 
+                      background: 'var(--secondary-bg)',
+                      borderColor: 'var(--border-color)'
+                    }}
+                  >
+                    <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
+                      Deposit Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {Object.entries(selectedTransaction.metadata.depositData).map(([key, value]) => (
+                        <div key={key}>
+                          <label className="block text-sm font-medium mb-2 capitalize" style={{ color: 'var(--text-dark)' }}>
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <span 
+                              className={`text-sm ${key === 'fromAddress' || key === 'toAddress' || key === 'txId' || key === 'recordId' ? 'font-mono break-all' : ''}`}
+                              style={{ color: 'var(--text-light)' }}
+                            >
+                              {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+                            </span>
+                            {(key === 'fromAddress' || key === 'toAddress' || key === 'txId' || key === 'recordId') && (
+                              <button
+                                onClick={() => copyToClipboard(String(value))}
+                                className="p-1 rounded hover:bg-purple-500/20 flex-shrink-0"
+                              >
+                                <ContentCopy style={{ fontSize: '16px', color: 'var(--accent-purple)' }} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Raw Data */}
+                <div 
+                  className="p-6 rounded-lg border"
+                  style={{ 
+                    background: 'var(--secondary-bg)',
+                    borderColor: 'var(--border-color)'
+                  }}
+                >
+                  <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
+                    Raw Transaction Data
+                  </h3>
+                  <div className="bg-black/20 p-4 rounded-lg overflow-x-auto">
+                    <pre 
+                      className="text-sm font-mono whitespace-pre-wrap"
+                      style={{ color: 'var(--text-light)' }}
+                    >
+                      {JSON.stringify(selectedTransaction, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

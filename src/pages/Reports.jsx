@@ -142,11 +142,11 @@ export default function GameReports() {
 
       {/* Game Content */}
       {selectedGame && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
           {/* Game Statistics */}
           <div className="xl:col-span-2">
             <div 
-              className="rounded-xl p-6 mb-6"
+              className="rounded-xl p-3 mb-6"
               style={{
                 background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
                 border: '1px solid var(--border-color)',
@@ -165,7 +165,7 @@ export default function GameReports() {
                     boxShadow: '0 8px 16px rgba(106, 13, 173, 0.4)'
                   }}
                 >
-                  <span style={{ fontSize: '24px' }}>
+                  <span style={{ fontSize: '14px' }}>
                     {getSelectedGameInfo()?.icon}
                   </span>
                 </div>
@@ -206,7 +206,7 @@ export default function GameReports() {
                   ))}
                 </div>
               ) : gameStats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
                   {/* Total Wager */}
                   <div 
                     className="p-4 rounded-lg transition-all duration-300 hover:scale-105"
@@ -219,14 +219,14 @@ export default function GameReports() {
                     <div className="flex items-center gap-2 mb-2">
                       <AttachMoney style={{ color: 'var(--accent-purple)', fontSize: '20px' }} />
                       <span 
-                        className="text-sm font-medium"
+                        className="text-xs font-medium"
                         style={{ color: 'var(--text-dark)' }}
                       >
                         Total Wager
                       </span>
                     </div>
                     <p 
-                      className="text-2xl font-bold"
+                      className="text-lg font-bold"
                       style={{ color: 'var(--text-light)' }}
                     >
                       ${gameStats.totalWager.toLocaleString()}
@@ -245,14 +245,14 @@ export default function GameReports() {
                     <div className="flex items-center gap-2 mb-2">
                       <Casino style={{ color: '#3b82f6', fontSize: '20px' }} />
                       <span 
-                        className="text-sm font-medium"
+                        className="text-xs font-medium"
                         style={{ color: 'var(--text-dark)' }}
                       >
-                        Bets This Month
+                        All Bet Amounts
                       </span>
                     </div>
                     <p 
-                      className="text-2xl font-bold"
+                      className="text-lg font-bold"
                       style={{ color: 'var(--text-light)' }}
                     >
                       {gameStats.totalBetsThisMonth.toLocaleString()}
@@ -271,14 +271,14 @@ export default function GameReports() {
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp style={{ color: 'var(--success-green)', fontSize: '20px' }} />
                       <span 
-                        className="text-sm font-medium"
+                        className="text-xs font-medium"
                         style={{ color: 'var(--text-dark)' }}
                       >
                         Total Wins
                       </span>
                     </div>
                     <p 
-                      className="text-2xl font-bold"
+                      className="text-lg font-bold"
                       style={{ color: 'var(--success-green)' }}
                     >
                       {gameStats.totalWins.toLocaleString()}
@@ -303,14 +303,14 @@ export default function GameReports() {
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingDown style={{ color: '#ef4444', fontSize: '20px' }} />
                       <span 
-                        className="text-sm font-medium"
+                        className="text-xs font-medium"
                         style={{ color: 'var(--text-dark)' }}
                       >
                         Total Losses
                       </span>
                     </div>
                     <p 
-                      className="text-2xl font-bold"
+                      className="text-lg font-bold"
                       style={{ color: '#ef4444' }}
                     >
                       {gameStats.totalLosses.toLocaleString()}
@@ -342,7 +342,7 @@ export default function GameReports() {
                       House Edge
                     </h4>
                     <p 
-                      className="text-3xl font-bold"
+                      className="text-xl font-bold"
                       style={{ color: 'var(--text-light)' }}
                     >
                       {gameStats.houseEdge}%
@@ -362,7 +362,7 @@ export default function GameReports() {
                       Revenue
                     </h4>
                     <p 
-                      className="text-3xl font-bold"
+                      className="text-xl font-bold"
                       style={{ color: 'var(--text-light)' }}
                     >
                       ${gameStats.revenue.toLocaleString()}

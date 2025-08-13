@@ -143,9 +143,9 @@ export default function BillsTable() {
               <th className="text-left py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
                 Status
               </th>
-              <th className="text-center py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
+              {/* <th className="text-center py-4 px-4 text-sm font-semibold" style={{ color: 'var(--text-light)' }}>
                 Action
-              </th>
+              </th> */}
             </tr>
           </thead>
           <tbody>
@@ -214,12 +214,12 @@ export default function BillsTable() {
                   <td className="py-4 px-4">
                     <span 
                       className="px-3 py-1 rounded-full text-xs font-medium"
-                      style={getStatusColor(bill.status)}
+                      style={getStatusColor("Paid")}
                     >
                       {bill.status}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-center">
+                  {/* <td className="py-4 px-4 text-center">
                     <button 
                       className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
                       style={{ 
@@ -231,7 +231,7 @@ export default function BillsTable() {
                     >
                       <Visibility fontSize="small" />
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))
             ) : (
