@@ -3,6 +3,7 @@ import { Info, TrendingUp, TrendingDown } from '@mui/icons-material';
 import ContentLoader from 'react-content-loader';
 
 export default function TransactionNotifications({ transactions, loading }) {
+  console.log(transactions)
   return (
     <div 
       className="rounded-xl p-6"
@@ -138,16 +139,16 @@ export default function TransactionNotifications({ transactions, loading }) {
                   
                   <span 
                     className={`text-xs font-medium px-2 py-1 rounded ${
-                      transaction.status === 'Completed' 
+                      transaction.status === 'completed' 
                         ? 'text-green-400' 
-                        : transaction.status === 'Pending'
+                        : transaction.status === 'pending'
                         ? 'text-yellow-400'
                         : 'text-red-400'
                     }`}
                     style={{
-                      background: transaction.status === 'Completed' 
+                      background: transaction.status === 'completed' 
                         ? 'rgba(0, 230, 118, 0.1)' 
-                        : transaction.status === 'Pending'
+                        : transaction.status === 'pending'
                         ? 'rgba(255, 193, 7, 0.1)'
                         : 'rgba(244, 67, 54, 0.1)'
                     }}
@@ -164,13 +165,13 @@ export default function TransactionNotifications({ transactions, loading }) {
                     className="font-bold text-lg"
                     style={{ color: 'var(--text-light)' }}
                   >
-                    ${transaction.amount.toLocaleString()}
+                    {transaction.metadata?.depositData?.amount} {transaction.metadata?.depositData?.coinSymbol}
                   </div>
                   <div 
                     className="text-xs"
                     style={{ color: 'var(--text-dark)' }}
                   >
-                    {transaction.type}
+                    {transaction.metadata?.depositData?.chain}
                   </div>
                 </div>
                 

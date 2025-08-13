@@ -67,7 +67,7 @@ export default function TopUsersTable({ users, loading }) {
                 className="text-center py-4 px-3 text-sm font-semibold"
                 style={{ color: 'var(--text-light)' }}
               >
-                Action
+                Status
               </th>
             </tr>
           </thead>
@@ -139,15 +139,14 @@ export default function TopUsersTable({ users, loading }) {
                   </td>
                   <td className="py-4 px-3 text-center">
                     <button 
-                      className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
+                      className="text-sm rounded-lg transition-all duration-200 hover:scale-110"
                       style={{ 
-                        color: 'var(--accent-purple)',
+                        color: 'var(--success-green)',
                         background: 'rgba(106, 13, 173, 0.1)',
-                        border: '1px solid var(--accent-purple)'
                       }}
                       title="View User Details"
                     >
-                      <Visibility fontSize="small" />
+                      Active
                     </button>
                   </td>
                 </tr>
