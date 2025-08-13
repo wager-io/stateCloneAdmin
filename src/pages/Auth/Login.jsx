@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ForgetPassword from './ForgetPassword'; 
 import api from "../../api/axios"
 import {toast} from 'sonner'
@@ -14,9 +14,25 @@ export default function LoginPage() {
     password: '',
     remember: false
   });
-  
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingDots, setLoadingDots] = useState('');
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+
+  // Animated loading dots effect
+  useEffect(() => {
+    let interval;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingDots(prev => {
+          if (prev === '...') return '';
+          return prev + '.';
+        });
+      }, 500);
+    } else {
+      setLoadingDots('');
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -27,6 +43,9 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async() => {
+    if (isLoading) return; 
+    
+    setIsLoading(true);
     try{
       const response = await api.post("/admin/login", {
         email: formData?.email, password: formData?.password
@@ -44,6 +63,9 @@ export default function LoginPage() {
         toast.error(err?.message)
         return
       }
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,7 +147,8 @@ export default function LoginPage() {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="Enter your email"
-              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+              disabled={isLoading}
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--primary-bg)',
                 borderColor: 'var(--border-color)',
@@ -149,7 +172,8 @@ export default function LoginPage() {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter your password"
-              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+              disabled={isLoading}
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--primary-bg)',
                 borderColor: 'var(--border-color)',
@@ -189,13 +213,21 @@ export default function LoginPage() {
       
           <button
             onClick={handleSubmit}
-            className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-all hover:opacity-90 focus:outline-none focus:ring-2"
+            disabled={isLoading}
+            className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-all hover:opacity-90 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             style={{ 
               backgroundColor: 'var(--accent-purple)',
               focusRingColor: 'var(--accent-purple)'
             }}
           >
-            Sign In
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Signing In{loadingDots}
+              </>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </div>
 
