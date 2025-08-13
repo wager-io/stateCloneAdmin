@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 
 export default function AdditionalMetrics() {
+
   const metrics = [
     { label: 'Average Session Time', value: '24m 32s', icon: <AccessTime />, color: 'var(--accent-purple)' },
     { label: 'Conversion Rate', value: '8.4%', icon: <TrendingUp />, color: 'var(--success-green)' },
@@ -27,7 +28,6 @@ export default function AdditionalMetrics() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Additional Metrics */}
       <div 
         className="p-6 rounded-xl"
         style={{
@@ -85,7 +85,6 @@ export default function AdditionalMetrics() {
         </div>
       </div>
 
-      {/* System Health */}
       <div 
         className="p-6 rounded-xl"
         style={{

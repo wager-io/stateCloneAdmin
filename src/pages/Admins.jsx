@@ -195,18 +195,6 @@ export default function Admins() {
 
   return (
     <div className="min-h-screen p-6" style={{ background: 'var(--primary-bg)' }}>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 
-          className="text-4xl font-bold mb-2"
-          style={{ 
-            color: 'var(--text-light)',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
-          }}
-        >
-          Admins Management
-        </h1>
-      </div>
 
       {/* Search and Filter Section */}
       <div 

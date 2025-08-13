@@ -29,8 +29,8 @@ export default function Dashboard() {
   const [topGameWinnersLoading, setTopGameWinnersLoading] = React.useState(false)
   const [topGameWinners, setTopGameWinners] = React.useState([])
 
-    useEffect(()=>{
-      async function getStatsData(){
+  useEffect(()=>{
+    async function getStatsData(){
         setStatsDataLoading(true)
         const response = await api.get("/admin/dashboard")
         if(response?.success){
@@ -86,19 +86,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen p-6" style={{ background: 'var(--primary-bg)' }}>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 
-          className="text-4xl font-bold mb-2"
-          style={{ 
-            color: 'var(--text-light)',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
-          }}
-        >
-          Dashboard
-        </h1>
-      </div>
-
       {/* 3D Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {statsData?.map((metric, index) => {

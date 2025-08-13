@@ -86,22 +86,6 @@ export default function GameReports() {
 
   return (
     <div className="min-h-screen p-6" style={{ background: 'var(--primary-bg)' }}>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 
-          className="text-4xl font-bold mb-2 flex items-center gap-3"
-          style={{ 
-            color: 'var(--text-light)',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
-          }}
-        >
-          <BarChart style={{ fontSize: '36px', color: 'var(--accent-purple)' }} />
-          Game Reports
-        </h1>
-        <p style={{ color: 'var(--text-dark)' }}>
-          Monitor game performance, statistics, and manage game settings
-        </p>
-      </div>
 
       {/* Game Selection Dropdown */}
       <div className="mb-8">

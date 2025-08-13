@@ -229,30 +229,12 @@ export default function Users() {
 
   return (
     <div className="min-h-screen p-6" style={{ background: 'var(--primary-bg)' }}>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 
-          className="text-4xl font-bold mb-2"
-          style={{ 
-            color: 'var(--text-light)',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
-          }}
-        >
-          Users Management
-        </h1>
-        <p 
-          className="text-lg"
-          style={{ color: 'var(--text-dark)' }}
-        >
-          Manage and monitor all registered users
-        </p>
-      </div>
 
       {/* Statistics Cards */}
       {usersData.statistics?.overview && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <div 
-            className="rounded-xl p-6"
+            className="rounded-xl py-6 px-3"
             style={{
               background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
               border: '1px solid var(--border-color)',
@@ -263,7 +245,7 @@ export default function Users() {
               <Groups style={{ color: 'var(--accent-purple)', fontSize: '24px' }} />
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Total Users</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
                   {usersData.statistics.overview.totalUsers?.toLocaleString() || 0}
                 </p>
               </div>
@@ -271,7 +253,7 @@ export default function Users() {
           </div>
 
           <div 
-            className="rounded-xl p-6"
+            className="rounded-xl  py-6 px-3"
             style={{
               background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
               border: '1px solid var(--border-color)',
@@ -282,7 +264,7 @@ export default function Users() {
               <Person style={{ color: '#22c55e', fontSize: '24px' }} />
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Active Users</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
                   {usersData.statistics.overview.activeUsers?.toLocaleString() || 0}
                 </p>
               </div>
@@ -290,7 +272,7 @@ export default function Users() {
           </div>
 
           <div 
-            className="rounded-xl p-6"
+            className="rounded-xl  py-6 px-3"
             style={{
               background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
               border: '1px solid var(--border-color)',
@@ -301,7 +283,7 @@ export default function Users() {
               <VerifiedUser style={{ color: '#06b6d4', fontSize: '24px' }} />
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Verified Users</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
                   {usersData.statistics.overview.verifiedUsers?.toLocaleString() || 0}
                 </p>
               </div>
@@ -309,7 +291,7 @@ export default function Users() {
           </div>
 
           <div 
-            className="rounded-xl p-6"
+            className="rounded-xl  py-6 px-3"
             style={{
               background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
               border: '1px solid var(--border-color)',
@@ -320,7 +302,7 @@ export default function Users() {
               <PersonOff style={{ color: '#f59e0b', fontSize: '24px' }} />
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Unverified</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
                   {usersData.statistics.overview.unverifiedUsers?.toLocaleString() || 0}
                 </p>
               </div>
@@ -328,7 +310,7 @@ export default function Users() {
           </div>
 
           <div 
-            className="rounded-xl p-6"
+            className="rounded-xl  py-6 px-3"
             style={{
               background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
               border: '1px solid var(--border-color)',
@@ -339,7 +321,7 @@ export default function Users() {
               <AccountBalance style={{ color: '#10b981', fontSize: '24px' }} />
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Total Balance</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--text-light)' }}>
+                <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
                   ${usersData.statistics.overview.totalBalance?.toLocaleString() || 0}
                 </p>
               </div>
@@ -482,49 +464,49 @@ export default function Users() {
                 style={{ borderColor: 'var(--accent-purple)' }}
               >
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   User ID
                 </th>
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Username
                 </th>
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Full Name
                 </th>
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Country
                 </th>
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Balance
                 </th>
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Verification
                 </th>
                 <th 
-                  className="text-left py-4 px-6 text-sm font-semibold"
+                  className="text-left py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Status
                 </th>
                 <th 
-                  className="text-center py-4 px-6 text-sm font-semibold"
+                  className="text-center py-4 px-6 text-xs font-semibold"
                   style={{ color: 'var(--text-light)' }}
                 >
                   Action
@@ -553,26 +535,26 @@ export default function Users() {
                     }}
                   >
                     <td 
-                      className="py-4 px-3 text-sm font-mono"
+                      className="py-4 px-3 text-xs font-mono"
                       style={{ color: 'var(--accent-purple)' }}
                       title={user._id}
                     >
                       {truncateUserId(user._id)}
                     </td>
                     <td 
-                      className="py-4 px-6 text-sm font-medium"
+                      className="py-4 px-6 text-xs font-medium"
                       style={{ color: 'var(--text-light)' }}
                     >
                       {user.username}
                     </td>
                     <td 
-                      className="py-4 px-6 text-sm"
+                      className="py-4 px-6 text-xs"
                       style={{ color: 'var(--text-light)' }}
                     >
                       {user.firstName} {user.lastName}
                     </td>
                     <td 
-                      className="py-4 px-6 text-sm"
+                      className="py-4 px-6 text-xs"
                       style={{ color: 'var(--text-light)' }}
                     >
                       <div className="flex items-center gap-2">
@@ -581,7 +563,7 @@ export default function Users() {
                       </div>
                     </td>
                     <td 
-                      className="py-4 px-6 text-sm font-bold"
+                      className="py-4 px-6 text-xs font-bold"
                       style={{ color: 'var(--success-green)' }}
                     >
                       ${user.balance?.toLocaleString() || 0}

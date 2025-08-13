@@ -47,7 +47,7 @@ export default function MetricCard({ title, value, icon, trend, trendUp, descrip
 
   return (
     <div 
-      className="relative p-5 w-full rounded-xl transition-all duration-300 hover:scale-105 hover:-translate-y-2 cursor-pointer group overflow-hidden"
+      className="relative p-3 w-full rounded-xl transition-all duration-300 hover:scale-105 hover:-translate-y-2 cursor-pointer group overflow-hidden"
       style={{
         background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
         border: '1px solid var(--border-color)',
@@ -88,36 +88,23 @@ export default function MetricCard({ title, value, icon, trend, trendUp, descrip
         {/* Value at the top */}
         <div className="flex items-center justify-between mb-3">
           <p 
-            className="text-2xl font-bold leading-tight"
+            className="text-[19px] font-bold leading-tight"
             style={{ 
               color: 'var(--text-light)',
               textShadow: '0 2px 6px rgba(0, 0, 0, 0.7)',
               filter: 'drop-shadow(0 0 10px rgba(224, 224, 224, 0.3))',
-              fontSize: 'clamp(1.5rem, 4vw, 2rem)'
             }}
           >
             {value}
           </p>
           
-          {trend && (
-            <div className="text-right">
-              <span 
-                className={`text-sm font-bold ${trendUp ? 'text-green-400' : 'text-red-400'}`}
-                style={{ 
-                  textShadow: '0 1px 3px rgba(0, 0, 0, 0.7)',
-                  filter: `drop-shadow(0 0 8px ${trendUp ? '#00e676' : '#ff5252'})`
-                }}
-              >
-                {trend}
-              </span>
-            </div>
-          )}
+  
         </div>
         
         {/* Icon and content section */}
         <div className="flex items-center gap-4 flex-1">
-          <div 
-            className="p-3 rounded-lg group-hover:scale-110 transition-all duration-300 shrink-0"
+          {/* <div 
+            className="p-2 rounded-lg group-hover:scale-110 transition-all duration-300 shrink-0"
             style={{
               background: `linear-gradient(145deg, var(--accent-purple), #8b3db8)`,
               boxShadow: `
@@ -131,11 +118,11 @@ export default function MetricCard({ title, value, icon, trend, trendUp, descrip
             {React.cloneElement(icon, { 
               style: { 
                 color: 'white', 
-                fontSize: '24px',
+                fontSize: '14px',
                 filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
               } 
             })}
-          </div>
+          </div> */}
           
           <div className="flex-1">
             <h3 
@@ -147,15 +134,43 @@ export default function MetricCard({ title, value, icon, trend, trendUp, descrip
             >
               {title}
             </h3>
-            
-            {description && (
-              <p 
-                className="text-xs leading-tight"
-                style={{ color: 'var(--text-dark)' }}
-              >
-                {description}
-              </p>
-            )}
+          <div className='flex justify-between' >
+          <div 
+            className="p-2 rounded-lg group-hover:scale-110 transition-all duration-300 shrink-0"
+            style={{
+              background: `linear-gradient(145deg, var(--accent-purple), #8b3db8)`,
+              boxShadow: `
+                0 8px 16px rgba(106, 13, 173, 0.4),
+                0 4px 8px rgba(106, 13, 173, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+              `
+            }}
+          >
+            {React.cloneElement(icon, { 
+              style: { 
+                color: 'white', 
+                fontSize: '20px',
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
+              } 
+            })}
+          </div> 
+              
+              {trend && (
+                <div className="text-right">
+                  <span 
+                    className={`text-sm font-bold ${trendUp ? 'text-green-400' : 'text-red-400'}`}
+                    style={{ 
+                      textShadow: '0 1px 3px rgba(0, 0, 0, 0.7)',
+                      filter: `drop-shadow(0 0 8px ${trendUp ? '#00e676' : '#ff5252'})`
+                    }}
+                  >
+                    {trend}
+                  </span>
+                </div>
+              )}
+              </div>
+      
           </div>
         </div>
       </div>
