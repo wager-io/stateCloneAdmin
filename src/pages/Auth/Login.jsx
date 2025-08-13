@@ -57,9 +57,10 @@ export default function LoginPage() {
         navigate("/dashboard")
         return
       }
+      console.log(response)
     }
     catch(err){
-      console.log(err)
+      console.log("err" + err)
       if(!err?.success){
         toast.error(err?.message)
         console.log(err)
