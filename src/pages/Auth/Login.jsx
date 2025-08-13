@@ -59,8 +59,10 @@ export default function LoginPage() {
       }
     }
     catch(err){
+      console.log(err)
       if(!err?.success){
         toast.error(err?.message)
+        console.log(err)
         return
       }
     }
