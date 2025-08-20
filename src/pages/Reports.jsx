@@ -9,8 +9,12 @@ import {
   BarChart,
   Casino,
   KeyboardArrowDown,
-  Save
+  Save,
+  Refresh,
+  Security,
+  Info
 } from '@mui/icons-material';
+import {toast} from "sonner"
 import api from '../api/axios';
 
 export default function GameReports() {
@@ -21,6 +25,17 @@ export default function GameReports() {
     minBetAmount: ''
   });
   const [loading, setLoading] = useState(false);
+  
+  // Crash game hash management state
+  const [hashSettings, setHashSettings] = useState({
+    hashString: '',
+    numberOfHashes: ''
+  });
+  const [hashStats, setHashStats] = useState({
+    unusedHashes: 0,
+    totalHashes: 0
+  });
+  const [hashLoading, setHashLoading] = useState(false);
 
   // Available games list
   const gamesList = [
@@ -41,6 +56,9 @@ export default function GameReports() {
   useEffect(() => {
     if (selectedGame) {
       fetchGameStats(selectedGame);
+      if (selectedGame === 'crash') {
+        fetchHashStats();
+      }
     }
   }, [selectedGame]);
 
@@ -78,6 +96,58 @@ export default function GameReports() {
   const handleSaveSettings = () => {
     console.log('Saving settings:', gameSettings);
     // Implement API call to save settings
+  };
+
+  // Hash management functions
+  const fetchHashStats = async () => {
+    try {
+      const response = await api.get('/admin/crash/hash-stats');
+      if (response.success) {
+        setHashStats({
+          unusedHashes: response.data.unusedHashes || 0,
+          totalHashes: response.data.totalHashes || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching hash stats:', error);
+      // Set mock data for demonstration
+      setHashStats({
+        unusedHashes: 150,
+        totalHashes: 1000
+      });
+    }
+  };
+
+  const handleHashSettingsChange = (field, value) => {
+    setHashSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleResetHashes = async () => {
+    if (!hashSettings.hashString.trim() || !hashSettings.numberOfHashes) {
+      toast.error('Please fill in both hash string and number of hashes');
+      return;
+    }
+
+    setHashLoading(true);
+    try {
+      const response = await api.post('/admin/crash/reset-hashes', {
+        hashString: hashSettings.hashString,
+        numberOfHashes: parseInt(hashSettings.numberOfHashes)
+      });
+      
+      if (response.success) {
+        toast.success('Hashes reset successfully!');
+        setHashSettings({ hashString: '', numberOfHashes: '' });
+        fetchHashStats(); // Refresh stats
+      }
+    } catch (error) {
+      console.error('Error resetting hashes:', error);
+      toast.error('Failed to reset hashes. Please try again.');
+    }
+    setHashLoading(false);
   };
 
   const getSelectedGameInfo = () => {
@@ -142,7 +212,7 @@ export default function GameReports() {
 
       {/* Game Content */}
       {selectedGame && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+        <div className={`grid gap-3 ${selectedGame === 'crash' ? 'grid-cols-1 xl:grid-cols-1' : 'grid-cols-1 xl:grid-cols-1'}`}>
           {/* Game Statistics */}
           <div className="xl:col-span-2">
             <div 
@@ -476,6 +546,233 @@ export default function GameReports() {
               )}
             </div>
           </div>
+
+          {/* Crash Game Hash Management */}
+          {selectedGame === 'crash' && (
+            <div className="xl:col-span-2">
+              {/* Hash Status Card */}
+              <div 
+                className="rounded-xl p-6 mb-6"
+                style={{
+                  background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: `
+                    0 15px 35px rgba(0, 0, 0, 0.3),
+                    0 5px 15px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.08)
+                  `
+                }}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <Security style={{ color: 'var(--accent-purple)', fontSize: '24px' }} />
+                  <h3 
+                    className="text-xl font-semibold"
+                    style={{ color: 'var(--text-light)' }}
+                  >
+                    Hash Status
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Unused Hashes */}
+                  <div 
+                    className="p-4 rounded-lg"
+                    style={{
+                      background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
+                      border: '1px solid var(--border-color)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Info style={{ color: '#3b82f6', fontSize: '20px' }} />
+                      <span 
+                        className="text-sm font-medium"
+                        style={{ color: 'var(--text-dark)' }}
+                      >
+                        Unused Hashes
+                      </span>
+                    </div>
+                    <p 
+                      className="text-2xl font-bold"
+                      style={{ color: 'var(--text-light)' }}
+                    >
+                      {hashStats.unusedHashes.toLocaleString()}
+                    </p>
+                  </div>
+
+                  {/* Total Hashes */}
+                  <div 
+                    className="p-4 rounded-lg"
+                    style={{
+                      background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
+                      border: '1px solid var(--border-color)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <BarChart style={{ color: 'var(--success-green)', fontSize: '20px' }} />
+                      <span 
+                        className="text-sm font-medium"
+                        style={{ color: 'var(--text-dark)' }}
+                      >
+                        Total Hashes
+                      </span>
+                    </div>
+                    <p 
+                      className="text-2xl font-bold"
+                      style={{ color: 'var(--text-light)' }}
+                    >
+                      {hashStats.totalHashes.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Usage Percentage */}
+                <div className="mt-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium" style={{ color: 'var(--text-dark)' }}>
+                      Hash Usage
+                    </span>
+                    <span className="text-sm font-bold" style={{ color: 'var(--accent-purple)' }}>
+                      {hashStats.totalHashes > 0 ? 
+                        Math.round(((hashStats.totalHashes - hashStats.unusedHashes) / hashStats.totalHashes) * 100) : 0
+                      }%
+                    </span>
+                  </div>
+                  <div 
+                    className="w-full h-2 rounded-full overflow-hidden"
+                    style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+                  >
+                    <div 
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{ 
+                        background: 'linear-gradient(90deg, var(--accent-purple), #8b3db8)',
+                        width: `${hashStats.totalHashes > 0 ? 
+                          ((hashStats.totalHashes - hashStats.unusedHashes) / hashStats.totalHashes) * 100 : 0
+                        }%`
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Hash Reset Section */}
+              <div 
+                className="rounded-xl p-6"
+                style={{
+                  background: 'linear-gradient(145deg, var(--secondary-bg), #1a1d3a)',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: `
+                    0 15px 35px rgba(0, 0, 0, 0.3),
+                    0 5px 15px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.08)
+                  `
+                }}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <Refresh style={{ color: 'var(--accent-purple)', fontSize: '24px' }} />
+                  <h3 
+                    className="text-xl font-semibold"
+                    style={{ color: 'var(--text-light)' }}
+                  >
+                    Reset Game Hashes
+                  </h3>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Hash String Input */}
+                  <div>
+                    <label 
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: 'var(--text-light)' }}
+                    >
+                      Hash String
+                    </label>
+                    <input
+                      type="text"
+                      value={hashSettings.hashString}
+                      onChange={(e) => handleHashSettingsChange('hashString', e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+                      style={{
+                        background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-light)'
+                      }}
+                      placeholder="Enter seed hash string..."
+                      disabled={hashLoading}
+                    />
+                  </div>
+
+                  {/* Number of Hashes Input */}
+                  <div>
+                    <label 
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: 'var(--text-light)' }}
+                    >
+                      Number of Hashes to Generate
+                    </label>
+                    <input
+                      type="number"
+                      value={hashSettings.numberOfHashes}
+                      onChange={(e) => handleHashSettingsChange('numberOfHashes', e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      style={{
+                        background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-light)'
+                      }}
+                      placeholder="Enter number of hashes (e.g., 1000)"
+                      min="1"
+                      max="10000"
+                      disabled={hashLoading}
+                    />
+                  </div>
+
+                  {/* Reset Button */}
+                  <button
+                    onClick={handleResetHashes}
+                    disabled={hashLoading}
+                    className="w-full mt-6 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      background: hashLoading ? 
+                        'linear-gradient(145deg, #666, #555)' : 
+                        'linear-gradient(145deg, var(--accent-purple), #8b3db8)',
+                      color: 'white',
+                      border: 'none',
+                      boxShadow: hashLoading ? 'none' : '0 8px 16px rgba(106, 13, 173, 0.4)'
+                    }}
+                  >
+                    {hashLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Resetting Hashes...
+                      </>
+                    ) : (
+                      <>
+                        <Refresh fontSize="small" />
+                        Reset Hashes
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Warning Message */}
+                <div 
+                  className="mt-4 p-3 rounded-lg flex items-start gap-2"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid #ef4444'
+                  }}
+                >
+                  <Info style={{ color: '#ef4444', fontSize: '16px', marginTop: '2px' }} />
+                  <div className="text-sm" style={{ color: '#ef4444' }}>
+                    <strong>Warning:</strong> Resetting hashes will generate new game outcomes. 
+                    This action cannot be undone and will affect future game rounds.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

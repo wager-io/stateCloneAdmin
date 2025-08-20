@@ -3,7 +3,6 @@ import { Info, TrendingUp, TrendingDown } from '@mui/icons-material';
 import ContentLoader from 'react-content-loader';
 
 export default function TransactionNotifications({ transactions, loading }) {
-  console.log(transactions)
   return (
     <div 
       className="rounded-xl p-6"
