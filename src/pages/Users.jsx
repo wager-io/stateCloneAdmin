@@ -132,14 +132,20 @@ export default function Users() {
   };
 
   // Handle view user
-  const handleViewUser = (userId) => {
+  const handleViewUser = (user) => {
+    setSelectedUser(user);
     setShowViewModal(true);
-    fetchUserById(userId);
-    
-    // Update URL with user ID
-    const url = new URL(window.location);
-    url.searchParams.set('userId', userId);
-    window.history.pushState({}, '', url);
+  };
+
+  // Handle user update from modal
+  const handleUserUpdate = (updatedUser) => {
+    setUsersData(prev => ({
+      ...prev,
+      users: prev.users.map(user => 
+        user._id === updatedUser._id ? { ...user, ...updatedUser } : user
+      )
+    }));
+    setSelectedUser(updatedUser);
   };
 
   // Close view modal
@@ -596,7 +602,7 @@ export default function Users() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <button 
-                        onClick={() => handleViewUser(user._id)}
+                        onClick={() => handleViewUser(user)}
                         className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
                         style={{ 
                           color: 'var(--accent-purple)',
@@ -738,12 +744,15 @@ export default function Users() {
         createLoading={createLoading}
       />
 
-      <ViewUserModal
-        showModal={showViewModal}
-        onClose={closeViewModal}
-        selectedUser={selectedUser}
-        loadingUser={loadingUser}
-      />
+      {showViewModal && (
+        <ViewUserModal
+          showModal={showViewModal}
+          onClose={closeViewModal}
+          initialUser={selectedUser}
+          loadingUser={loadingUser}
+          onUserUpdate={handleUserUpdate}
+        />
+      )}
     </div>
   );
 }

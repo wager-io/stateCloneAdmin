@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Close,
   Person,
@@ -10,15 +10,223 @@ import {
   AccountBalance,
   Language,
   CalendarToday,
-  Group
+  Group,
+  Edit,
+  Save,
+  Cancel,
+  Lock,
+  LockOpen,
+  MoneyOff,
+  AttachMoney
 } from '@mui/icons-material';
+import { TextField, Button, Switch, FormControlLabel, Tooltip, IconButton, CircularProgress, Snackbar, Alert } from '@mui/material';
+import api from '../../api/axios';
 
 const ViewUserModal = ({ 
   showModal, 
   onClose, 
-  selectedUser, 
-  loadingUser 
+  initialUser, 
+  loadingUser,
+  onUserUpdate
 }) => {
+  const [user, setUser] = useState(initialUser);
+  const [editingSection, setEditingSection] = useState({
+    basic: false,
+    location: false,
+    referral: false
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  const [isEditingBalance, setIsEditingBalance] = useState(false);
+  const [newBalance, setNewBalance] = useState('');
+
+  useEffect(() => {
+    setUser(initialUser);
+  }, [initialUser]);
+
+  const handleSaveBalance = async () => {
+    try {
+      setIsSaving(true);
+      const response = await api.patch(`/admin/users/balance/${user._id}`, {
+        balance: parseFloat(newBalance)
+      });
+      if (response.success) {
+        setUser(prev => ({ ...prev, balance: parseFloat(newBalance) }));
+        onUserUpdate({ ...user, balance: parseFloat(newBalance) });
+        setIsEditingBalance(false);
+        showMessage('Balance updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating balance:', error);
+      showMessage(error.response?.data?.message || 'Failed to update balance', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const showMessage = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setUser(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSaveBasic = async () => {
+    try {
+      setIsSaving(true);
+      const basicData = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        username: user.username,
+        status: user.status,
+        dateOfBirth: user.dateOfBirth,
+        language: user.language
+      };
+      const response = await api.patch(`/admin/users/basic/${user._id}`, basicData);
+      if (response.success) {
+        setUser(prev => ({ ...prev, ...response.data }));
+        onUserUpdate({ ...user, ...response.data });
+        setEditingSection(prev => ({ ...prev, basic: false }));
+        showMessage('Basic information updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating basic info:', error);
+      showMessage(error.response?.data?.message || 'Failed to update basic information', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    try {
+      setIsSaving(true);
+      const locationData = {
+        country: user.country,
+        state: user.state,
+        city: user.city,
+        postalCode: user.postalCode,
+        residentAddress: user.residentAddress
+      };
+      const response = await api.patch(`/admin/users/location/${user._id}`, locationData);
+      if (response.success) {
+        setUser(prev => ({ ...prev, ...response.data }));
+        onUserUpdate({ ...user, ...response.data });
+        setEditingSection(prev => ({ ...prev, location: false }));
+        showMessage('Location information updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating location:', error);
+      showMessage(error.response?.data?.message || 'Failed to update location information', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveReferral = async () => {
+    try {
+      setIsSaving(true);
+      const referralData = {
+        commissionRate: user.commissionRate,
+        currentLevel: user.currentLevel,
+        referralCampaign: user.referralCampaign
+      };
+      const response = await api.patch(`/admin/users/referral/${user._id}`, referralData);
+      if (response.success) {
+        setUser(prev => ({ ...prev, ...response.data }));
+        onUserUpdate({ ...user, ...response.data });
+        setEditingSection(prev => ({ ...prev, referral: false }));
+        showMessage('Referral information updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating referral info:', error);
+      showMessage(error.response?.data?.message || 'Failed to update referral information', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleWithdrawalStatus = async () => {
+    try {
+      setIsSaving(true);
+      const response = await api.patch(`/admin/users/withdrawal-status/${user._id}`, {
+        withdrawalDisabled: !user.withdrawalDisabled
+      });
+      if (response.success) {
+        setUser(prev => ({
+          ...prev,
+          withdrawalDisabled: !prev.withdrawalDisabled
+        }));
+        onUserUpdate({
+          ...user,
+          withdrawalDisabled: !user.withdrawalDisabled
+        });
+        showMessage(
+          user.withdrawalDisabled 
+            ? 'Withdrawals enabled successfully' 
+            : 'Withdrawals disabled successfully'
+        );
+      }
+    } catch (error) {
+      console.error('Error updating withdrawal status:', error);
+      showMessage(error.message || 'Failed to update withdrawal status', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleUserStatus = async () => {
+    const newStatus = user.status === 'active' ? 'disabled' : 'active';
+    try {
+      setIsSaving(true);
+      const response = await api.patch(`/admin/users/status/${user._id}`, {
+        status: newStatus
+      });
+      if (response.success) {
+        setUser(prev => ({
+          ...prev,
+          status: newStatus
+        }));
+        onUserUpdate({
+          ...user,
+          status: newStatus
+        });
+        showMessage(
+          newStatus === 'active' 
+            ? 'User account enabled successfully' 
+            : 'User account disabled successfully'
+        );
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      showMessage(error.message || 'Failed to update user status', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setUser(initialUser);
+    setIsEditing(false);
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'active':
@@ -70,7 +278,7 @@ const ViewUserModal = ({
     return flags[country] || '🌍';
   };
 
-  if (!showModal) return null;
+  if (!showModal || !user) return null;
 
   return (
     <div 
@@ -110,7 +318,7 @@ const ViewUserModal = ({
           <div className="text-center py-8" style={{ color: 'var(--text-dark)' }}>
             Loading user details...
           </div>
-        ) : selectedUser ? (
+        ) : (
           <div className="space-y-6">
             {/* User Header */}
             <div className="flex items-center gap-6 mb-6 p-6 rounded-lg" style={{ background: 'rgba(106, 13, 173, 0.05)' }}>
@@ -121,48 +329,199 @@ const ViewUserModal = ({
                   color: 'var(--text-light)'
                 }}
               >
-                {selectedUser.firstName?.charAt(0)?.toUpperCase()}{selectedUser.lastName?.charAt(0)?.toUpperCase()}
+                {user.firstName?.charAt(0)?.toUpperCase()}{user.lastName?.charAt(0)?.toUpperCase()}
               </div>
               <div className="flex-1">
-                <h3 
-                  className="text-2xl font-bold mb-1"
-                  style={{ color: 'var(--text-light)' }}
-                >
-                  {selectedUser.firstName} {selectedUser.lastName}
-                </h3>
-                <p className="text-lg mb-2" style={{ color: 'var(--text-dark)' }}>
-                  @{selectedUser.username}
-                </p>
+                <div className="flex items-center gap-4">
+                  {editingSection.basic ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <TextField
+                          name="firstName"
+                          value={user.firstName || ''}
+                          onChange={handleInputChange}
+                          size="small"
+                          variant="outlined"
+                          className="bg-white rounded"
+                        />
+                        <TextField
+                          name="lastName"
+                          value={user.lastName || ''}
+                          onChange={handleInputChange}
+                          size="small"
+                          variant="outlined"
+                          className="bg-white rounded"
+                        />
+                      </div>
+                      <TextField
+                        name="username"
+                        value={user.username || ''}
+                        onChange={handleInputChange}
+                        size="small"
+                        variant="outlined"
+                        className="bg-white rounded w-full"
+                        label="Username"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <h3 
+                        className="text-2xl font-bold mb-1"
+                        style={{ color: 'var(--text-light)' }}
+                      >
+                        {user.firstName} {user.lastName}
+                      </h3>
+                      <p className="text-lg mb-2" style={{ color: 'var(--text-dark)' }}>
+                        @{user.username}
+                      </p>
+                    </div>
+                  )}
+                  {!editingSection.basic && (
+                    <Tooltip title="Edit user">
+                      <IconButton 
+                        onClick={() => setEditingSection({...editingSection, basic: true})}
+                        style={{ color: 'var(--accent-purple)' }}
+                      >
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </div>
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(selectedUser.status)}
+                    {getStatusIcon(user.status)}
                     <span 
                       className="px-3 py-1 rounded-full text-xs font-medium"
-                      style={getStatusColor(selectedUser.status)}
+                      style={getStatusColor(user.status)}
                     >
-                      {selectedUser.status?.toUpperCase()}
+                      {user.status?.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {getVerificationIcon(selectedUser.is_verified)}
+                    {getVerificationIcon(user.is_verified)}
                     <span 
                       className="px-3 py-1 rounded-full text-xs font-medium"
                       style={{
-                        color: selectedUser.is_verified ? '#22c55e' : '#f59e0b',
-                        background: selectedUser.is_verified ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                        border: `1px solid ${selectedUser.is_verified ? '#22c55e' : '#f59e0b'}`
+                        color: user.is_verified ? '#22c55e' : '#f59e0b',
+                        background: user.is_verified ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                        border: `1px solid ${user.is_verified ? '#22c55e' : '#f59e0b'}`
                       }}
                     >
-                      {selectedUser.is_verified ? 'Email Verified' : 'Email Unverified'}
+                      {user.is_verified ? 'Email Verified' : 'Email Unverified'}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Account Balance</p>
-                <p className="text-3xl font-bold" style={{ color: '#10b981' }}>
-                  ${selectedUser.balance?.toLocaleString() || 0}
-                </p>
+                <div className="flex justify-between items-center mb-1">
+                  <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Account Balance</p>
+                  {!isEditingBalance ? (
+                    <IconButton 
+                      size="small" 
+                      onClick={() => {
+                        setNewBalance(user.balance?.toString() || '0');
+                        setIsEditingBalance(true);
+                      }}
+                      style={{ color: '#3b82f6' }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  ) : null}
+                </div>
+                {isEditingBalance ? (
+                  <div className="flex items-center gap-2">
+                    <TextField
+                      type="number"
+                      value={newBalance}
+                      onChange={(e) => setNewBalance(e.target.value)}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded w-40"
+                      inputProps={{
+                        style: { 
+                          color: '#10b981',
+                          fontSize: '1.5rem',
+                          fontWeight: 'bold',
+                          textAlign: 'right'
+                        }
+                      }}
+                    />
+                    <IconButton 
+                      size="small" 
+                      onClick={handleSaveBalance}
+                      disabled={isSaving}
+                      style={{ color: '#10b981' }}
+                    >
+                      <Save fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => setIsEditingBalance(false)}
+                      disabled={isSaving}
+                      style={{ color: '#ef4444' }}
+                    >
+                      <Cancel fontSize="small" />
+                    </IconButton>
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold" style={{ color: '#10b981' }}>
+                    ${user.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-col gap-2">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={user.withdrawalDisabled || false}
+                        onChange={toggleWithdrawalStatus}
+                        color="error"
+                        disabled={isSaving}
+                      />
+                    }
+                    label={
+                      <div className="flex items-center gap-1">
+                        {user.withdrawalDisabled ? (
+                          <>
+                            <MoneyOff fontSize="small" style={{ color: 'white' }} />
+                            <span style={{ color: 'white' }}>Withdrawals Disabled</span>
+                          </>
+                        ) : (
+                          <>
+                            <AttachMoney fontSize="small" style={{ color: 'white' }} />
+                            <span style={{ color: 'white' }}>Withdrawals Enabled</span>
+                          </>
+                        )}
+                      </div>
+                    }
+                    labelPlacement="start"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={user.status === 'active'}
+                        onChange={toggleUserStatus}
+                        color={user.status === 'active' ? 'success' : 'default'}
+                        disabled={isSaving}
+                      />
+                    }
+                    label={
+                      <div className="flex items-center gap-1">
+                        {user.status === 'active' ? (
+                          <>
+                            <LockOpen fontSize="small" style={{ color: 'white' }} />
+                            <span style={{ color: 'white' }}>Account Active</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock fontSize="small" style={{ color: 'white' }} />
+                            <span style={{ color: 'white' }}>Account Disabled</span>
+                          </>
+                        )}
+                      </div>
+                    }
+                    labelPlacement="start"
+                  />
+                </div>
               </div>
             </div>
 
@@ -174,70 +533,183 @@ const ViewUserModal = ({
                 border: '1px solid var(--border-color)'
               }}
             >
-              <h4 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
-                Basic Information
-              </h4>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-lg font-semibold" style={{ color: 'var(--text-light)' }}>
+                  Basic Information
+                </h4>
+                {!editingSection.basic ? (
+                  <Tooltip title="Edit Basic Information">
+                    <IconButton
+                      onClick={() => setEditingSection(prev => ({ ...prev, basic: true }))}
+                      size="small"
+                      style={{ color: 'var(--accent-purple)' }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={handleSaveBasic}
+                      disabled={isSaving}
+                      startIcon={isSaving ? <CircularProgress size={20} /> : <Save />}
+                    >
+                      {isSaving ? 'Saving...' : 'Save Basic'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      sx={{
+                        color: '#1e40af',
+                        borderColor: '#3b82f6',
+                        backgroundColor: '#eff6ff',
+                        '&:hover': {
+                          backgroundColor: '#dbeafe',
+                          borderColor: '#2563eb',
+                          color: '#1e40af'
+                        },
+                        fontWeight: 500,
+                        marginLeft: '8px',
+                        textTransform: 'none',
+                        borderRadius: '4px'
+                      }}
+                      onClick={() => {
+                        setUser(initialUser);
+                        setEditingSection(prev => ({ ...prev, basic: false }));
+                      }}
+                      disabled={isSaving}
+                      startIcon={<Cancel />}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     User ID
                   </label>
-                  <div 
-                    className="p-3 rounded-lg"
-                    style={{ 
-                      background: 'rgba(106, 13, 173, 0.1)',
-                      border: '1px solid var(--accent-purple)',
-                      color: 'var(--accent-purple)',
-                      fontFamily: 'monospace',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {selectedUser._id}
-                  </div>
+                  {editingSection.basic ? (
+                    <TextField
+                      name="_id"
+                      value={user._id || ''}
+                      disabled
+                      size="small"
+                      variant="outlined"
+                      fullWidth
+                      className="bg-gray-100"
+                    />
+                  ) : (
+                    <div className="p-3 rounded-lg"
+                      style={{ 
+                        background: 'rgba(106, 13, 173, 0.1)',
+                        border: '1px solid var(--accent-purple)',
+                        color: 'var(--accent-purple)',
+                        fontFamily: 'monospace',
+                        fontSize: '12px'
+                      }}
+                    >
+                      {user._id}
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     Email
                   </label>
-                  <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
-                    background: 'rgba(6, 182, 212, 0.1)',
-                    border: '1px solid #06b6d4'
-                  }}>
-                    <Email style={{ color: '#06b6d4', fontSize: '16px' }} />
-                    <span style={{ color: '#06b6d4' }}>{selectedUser.email}</span>
-                  </div>
+                  {editingSection.basic ? (
+                    <TextField
+                      fullWidth
+                      name="email"
+                      value={user.email || ''}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
+                      background: 'rgba(6, 182, 212, 0.1)',
+                      border: '1px solid #06b6d4'
+                    }}>
+                      <Email style={{ color: '#06b6d4', fontSize: '16px' }} />
+                      <span style={{ color: '#06b6d4' }}>{user.email}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     Language
                   </label>
-                  <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid #10b981'
-                  }}>
-                    <Language style={{ color: '#10b981', fontSize: '16px' }} />
-                    <span style={{ color: '#10b981' }}>{selectedUser.language || 'English'}</span>
-                  </div>
+                  {editingSection.basic ? (
+                    <TextField
+                      fullWidth
+                      name="language"
+                      value={user.language || 'English'}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                      select
+                      SelectProps={{ native: true }}
+                    >
+                      <option value="English">English</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="French">French</option>
+                      <option value="German">German</option>
+                      <option value="Chinese">Chinese</option>
+                      <option value="Japanese">Japanese</option>
+                    </TextField>
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      border: '1px solid #10b981'
+                    }}>
+                      <Language style={{ color: '#10b981', fontSize: '16px' }} />
+                      <span style={{ color: '#10b981' }}>{user.language || 'English'}</span>
+                    </div>
+                  )}
                 </div>
 
-                {selectedUser.dateOfBirth && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
-                      Date of Birth
-                    </label>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                    Date of Birth
+                  </label>
+                  {editingSection.basic ? (
+                    <TextField
+                      fullWidth
+                      name="dateOfBirth"
+                      type="date"
+                      value={user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : ''}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                  ) : user?.dateOfBirth ? (
                     <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
                       background: 'rgba(245, 158, 11, 0.1)',
                       border: '1px solid #f59e0b'
                     }}>
                       <CalendarToday style={{ color: '#f59e0b', fontSize: '16px' }} />
                       <span style={{ color: '#f59e0b' }}>
-                        {new Date(selectedUser.dateOfBirth).toLocaleDateString()}
+                        {new Date(user.dateOfBirth).toLocaleDateString()}
                       </span>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-3 text-gray-400">Not set</div>
+                  )}
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
@@ -249,7 +721,7 @@ const ViewUserModal = ({
                   }}>
                     <CalendarToday style={{ color: '#8b5cf6', fontSize: '16px' }} />
                     <span style={{ color: '#8b5cf6' }}>
-                      {new Date(selectedUser.createdAt).toLocaleDateString()}
+                      {new Date(user.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -267,7 +739,7 @@ const ViewUserModal = ({
                       fontFamily: 'monospace'
                     }}
                   >
-                    {selectedUser.affiliateCode || 'N/A'}
+                    {user.affiliateCode || 'N/A'}
                   </div>
                 </div>
               </div>
@@ -275,104 +747,287 @@ const ViewUserModal = ({
 
             {/* Location Information */}
             <div 
-              className="rounded-xl p-6"
+              className="rounded-xl p-6 mt-6"
               style={{
                 background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
                 border: '1px solid var(--border-color)'
               }}
             >
-              <h4 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
-                Location Information
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {selectedUser.country && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
-                      Country
-                    </label>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-lg font-semibold" style={{ color: 'var(--text-light)' }}>
+                  Location Information
+                </h4>
+                {!editingSection.location ? (
+                  <Tooltip title="Edit Location">
+                    <IconButton
+                      onClick={() => setEditingSection(prev => ({ ...prev, location: true }))}
+                      size="small"
+                      style={{ color: 'var(--accent-purple)' }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={handleSaveLocation}
+                      disabled={isSaving}
+                      startIcon={isSaving ? <CircularProgress size={20} /> : <Save />}
+                    >
+                      {isSaving ? 'Saving...' : 'Save Location'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      sx={{
+                        color: '#1e40af',
+                        borderColor: '#3b82f6',
+                        backgroundColor: '#eff6ff',
+                        '&:hover': {
+                          backgroundColor: '#dbeafe',
+                          borderColor: '#2563eb',
+                          color: '#1e40af'
+                        },
+                        fontWeight: 500,
+                        marginLeft: '8px',
+                        textTransform: 'none',
+                        borderRadius: '4px'
+                      }}
+                      onClick={() => {
+                        setUser(initialUser);
+                        setEditingSection(prev => ({ ...prev, location: false }));
+                      }}
+                      disabled={isSaving}
+                      startIcon={<Cancel />}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                    Country
+                  </label>
+                  {editingSection.location ? (
+                    <TextField
+                      fullWidth
+                      name="country"
+                      value={user.country || ''}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                      select
+                      SelectProps={{ native: true }}
+                    >
+                      <option value="">Select Country</option>
+                      <option value="USA">United States</option>
+                      <option value="UK">United Kingdom</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Australia">Australia</option>
+                      <option value="Germany">Germany</option>
+                      <option value="France">France</option>
+                      <option value="Japan">Japan</option>
+                      <option value="China">China</option>
+                      <option value="India">India</option>
+                      <option value="Brazil">Brazil</option>
+                    </TextField>
+                  ) : user.country ? (
                     <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
                       background: 'rgba(6, 182, 212, 0.1)',
                       border: '1px solid #06b6d4'
                     }}>
-                      <span className="text-lg">{getCountryFlag(selectedUser.country)}</span>
-                      <span style={{ color: '#06b6d4' }}>{selectedUser.country}</span>
+                      <span className="text-lg">{getCountryFlag(user.country)}</span>
+                      <span style={{ color: '#06b6d4' }}>{user.country}</span>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-3 text-gray-400">Not set</div>
+                  )}
+                </div>
 
-                {selectedUser.state && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
-                      State
-                    </label>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                    State/Province
+                  </label>
+                  {editingSection.location ? (
+                    <TextField
+                      fullWidth
+                      name="state"
+                      value={user.state || ''}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                    />
+                  ) : user.state ? (
                     <div className="p-3 rounded-lg" style={{ 
                       background: 'rgba(16, 185, 129, 0.1)',
                       border: '1px solid #10b981',
                       color: '#10b981'
                     }}>
-                      {selectedUser.state}
+                      {user.state}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-3 text-gray-400">Not set</div>
+                  )}
+                </div>
 
-                {selectedUser.city && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
-                      City
-                    </label>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                    City
+                  </label>
+                  {editingSection.location ? (
+                    <TextField
+                      fullWidth
+                      name="city"
+                      value={user.city || ''}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                    />
+                  ) : user.city ? (
                     <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
                       background: 'rgba(245, 158, 11, 0.1)',
                       border: '1px solid #f59e0b'
                     }}>
                       <LocationOn style={{ color: '#f59e0b', fontSize: '16px' }} />
-                      <span style={{ color: '#f59e0b' }}>{selectedUser.city}</span>
+                      <span style={{ color: '#f59e0b' }}>{user.city}</span>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-3 text-gray-400">Not set</div>
+                  )}
+                </div>
 
-                {selectedUser.postalCode && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
-                      Postal Code
-                    </label>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                    Postal Code
+                  </label>
+                  {editingSection.location ? (
+                    <TextField
+                      fullWidth
+                      name="postalCode"
+                      value={user.postalCode || ''}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                    />
+                  ) : user.postalCode ? (
                     <div className="p-3 rounded-lg" style={{ 
                       background: 'rgba(139, 92, 246, 0.1)',
                       border: '1px solid #8b5cf6',
                       color: '#8b5cf6'
                     }}>
-                      {selectedUser.postalCode}
+                      {user.postalCode}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-3 text-gray-400">Not set</div>
+                  )}
+                </div>
               </div>
 
-              {selectedUser.residentAddress && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
-                    Resident Address
-                  </label>
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                  Resident Address
+                </label>
+                {editingSection.location ? (
+                  <TextField
+                    fullWidth
+                    name="residentAddress"
+                    value={user.residentAddress || ''}
+                    onChange={handleInputChange}
+                    size="small"
+                    variant="outlined"
+                    className="bg-white rounded"
+                    multiline
+                    rows={2}
+                  />
+                ) : user.residentAddress ? (
                   <div className="p-3 rounded-lg" style={{ 
                     background: 'rgba(34, 197, 94, 0.1)',
                     border: '1px solid #22c55e',
-                    color: '#22c55e'
+                    color: '#22c55e',
+                    whiteSpace: 'pre-wrap'
                   }}>
-                    {selectedUser.residentAddress}
+                    {user.residentAddress}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 text-gray-400">Not set</div>
+                )}
+              </div>
             </div>
 
             {/* Referral Information */}
             <div 
-              className="rounded-xl p-6"
+              className="rounded-xl p-6 mt-6"
               style={{
                 background: 'linear-gradient(145deg, #1a1d2e, #15182a)',
                 border: '1px solid var(--border-color)'
               }}
             >
-              <h4 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
-                Referral Information
-              </h4>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-lg font-semibold" style={{ color: 'var(--text-light)' }}>
+                  Referral Information
+                </h4>
+                {!editingSection.referral ? (
+                  <Tooltip title="Edit Referral">
+                    <IconButton
+                      onClick={() => setEditingSection(prev => ({ ...prev, referral: true }))}
+                      size="small"
+                      style={{ color: 'var(--accent-purple)' }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={handleSaveReferral}
+                      disabled={isSaving}
+                      startIcon={isSaving ? <CircularProgress size={20} /> : <Save />}
+                    >
+                      {isSaving ? 'Saving...' : 'Save Referral'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      sx={{
+                        color: '#1e40af',
+                        borderColor: '#3b82f6',
+                        backgroundColor: '#eff6ff',
+                        '&:hover': {
+                          backgroundColor: '#dbeafe',
+                          borderColor: '#2563eb',
+                          color: '#1e40af'
+                        },
+                        fontWeight: 500,
+                        marginLeft: '8px',
+                        textTransform: 'none',
+                        borderRadius: '4px'
+                      }}
+                      onClick={() => {
+                        setUser(initialUser);
+                        setEditingSection(prev => ({ ...prev, referral: false }));
+                      }}
+                      disabled={isSaving}
+                      startIcon={<Cancel />}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
@@ -384,7 +1039,7 @@ const ViewUserModal = ({
                   }}>
                     <Group style={{ color: 'var(--accent-purple)', fontSize: '16px' }} />
                     <span style={{ color: 'var(--accent-purple)' }}>
-                      {selectedUser.referralCount || 0} referrals
+                      {user.referralCount || 0} referrals
                     </span>
                   </div>
                 </div>
@@ -393,32 +1048,69 @@ const ViewUserModal = ({
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     Commission Rate
                   </label>
-                  <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
-                    background: 'rgba(34, 197, 94, 0.1)',
-                    border: '1px solid #22c55e'
-                  }}>
-                    <AccountBalance style={{ color: '#22c55e', fontSize: '16px' }} />
-                    <span style={{ color: '#22c55e' }}>
-                      {selectedUser.commissionRate || 0}%
-                    </span>
-                  </div>
+                  {editingSection.referral ? (
+                    <div className="flex items-center gap-2">
+                      <TextField
+                        name="commissionRate"
+                        type="number"
+                        value={user.commissionRate || 0}
+                        onChange={handleInputChange}
+                        size="small"
+                        variant="outlined"
+                        className="bg-white rounded flex-1"
+                        inputProps={{
+                          min: 0,
+                          max: 100,
+                          step: 0.1
+                        }}
+                      />
+                      <span>%</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
+                      background: 'rgba(34, 197, 94, 0.1)',
+                      border: '1px solid #22c55e'
+                    }}>
+                      <AccountBalance style={{ color: '#22c55e', fontSize: '16px' }} />
+                      <span style={{ color: '#22c55e' }}>
+                        {user.commissionRate || 0}%
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     Current Level
                   </label>
-                  <div className="p-3 rounded-lg" style={{ 
-                    background: 'rgba(245, 158, 11, 0.1)',
-                    border: '1px solid #f59e0b',
-                    color: '#f59e0b'
-                  }}>
-                    Level {selectedUser.current_level || 0}
-                  </div>
+                  {editingSection.referral ? (
+                    <TextField
+                      fullWidth
+                      name="current_level"
+                      type="number"
+                      value={user.current_level || 0}
+                      onChange={handleInputChange}
+                      size="small"
+                      variant="outlined"
+                      className="bg-white rounded"
+                      inputProps={{
+                        min: 0,
+                        step: 1
+                      }}
+                    />
+                  ) : (
+                    <div className="p-3 rounded-lg" style={{ 
+                      background: 'rgba(245, 158, 11, 0.1)',
+                      border: '1px solid #f59e0b',
+                      color: '#f59e0b'
+                    }}>
+                      Level {user.current_level || 0}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {selectedUser.referredBy && (
+              {user.referredBy && (
                 <div className="mt-4">
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     Referred By
@@ -428,12 +1120,28 @@ const ViewUserModal = ({
                     border: '1px solid #06b6d4',
                     color: '#06b6d4'
                   }}>
-                    {selectedUser.referredBy?.username || selectedUser.referredBy?.email || 'Unknown User'}
+                    {user.referredBy?.username || user.referredBy?.email || 'Unknown User'}
                   </div>
                 </div>
               )}
 
-              {selectedUser.referralCampaign && (
+              {editingSection.referral ? (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
+                    Referral Campaign
+                  </label>
+                  <TextField
+                    fullWidth
+                    name="referralCampaign"
+                    value={user.referralCampaign || ''}
+                    onChange={handleInputChange}
+                    size="small"
+                    variant="outlined"
+                    className="bg-white rounded"
+                    placeholder="Enter referral campaign code"
+                  />
+                </div>
+              ) : user.referralCampaign ? (
                 <div className="mt-4">
                   <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-dark)' }}>
                     Referral Campaign
@@ -443,14 +1151,14 @@ const ViewUserModal = ({
                     border: '1px solid #8b5cf6',
                     color: '#8b5cf6'
                   }}>
-                    {selectedUser.referralCampaign}
+                    {user.referralCampaign}
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/* Referrals List */}
-            {selectedUser.referrals && selectedUser.referrals.length > 0 && (
+            {user.referrals && user.referrals.length > 0 && (
               <div 
                 className="rounded-xl p-6"
                 style={{
@@ -459,10 +1167,10 @@ const ViewUserModal = ({
                 }}
               >
                 <h4 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-light)' }}>
-                  Referred Users ({selectedUser.referrals.length})
+                  Referred Users ({user.referrals.length})
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {selectedUser.referrals.map((referral, index) => (
+                  {user.referrals.map((referral, index) => (
                     <div 
                       key={index}
                       className="p-3 rounded-lg"
@@ -485,12 +1193,22 @@ const ViewUserModal = ({
               </div>
             )}
           </div>
-        ) : (
-          <div className="text-center py-8" style={{ color: 'var(--text-dark)' }}>
-            Failed to load user details
-          </div>
         )}
       </div>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
