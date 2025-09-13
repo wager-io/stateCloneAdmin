@@ -21,6 +21,7 @@ import {
 import api from "../api/axios";
 import CreateUserModal from '../components/users/CreateUserModal';
 import ViewUserModal from '../components/users/ViewUserModal';
+import { formatBalance } from '../utils/formatUtils';
 
 export default function Users() {
   const [usersData, setUsersData] = useState({
@@ -328,7 +329,7 @@ export default function Users() {
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Total Balance</p>
                 <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
-                  ${usersData.statistics.overview.totalBalance?.toLocaleString() || 0}
+                  {formatBalance(usersData.statistics.overview.totalBalance)}
                 </p>
               </div>
             </div>
@@ -572,7 +573,7 @@ export default function Users() {
                       className="py-4 px-6 text-xs font-bold"
                       style={{ color: 'var(--success-green)' }}
                     >
-                      ${user.balance?.toLocaleString() || 0}
+                      {formatBalance(user.balance)}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">

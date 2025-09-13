@@ -19,8 +19,31 @@ import {
   MoneyOff,
   AttachMoney
 } from '@mui/icons-material';
-import { TextField, Button, Switch, FormControlLabel, Tooltip, IconButton, CircularProgress, Snackbar, Alert } from '@mui/material';
+import { TextField, Button, Switch, FormControlLabel, Tooltip, IconButton, CircularProgress, Snackbar, Alert, Box } from '@mui/material';
 import api from '../../api/axios';
+import { formatBalance } from '../../utils/formatUtils';
+
+// Reusable component for truncated text with tooltip
+const TruncatedText = ({ text, maxWidth = '100%', color = 'inherit', children, ...props }) => {
+  const content = children || text;
+  return (
+    <Tooltip title={content || ''} arrow>
+      <Box 
+        sx={{
+          maxWidth,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          color,
+          ...props.sx
+        }}
+        {...props}
+      >
+        {content}
+      </Box>
+    </Tooltip>
+  );
+};
 
 const ViewUserModal = ({ 
   showModal, 
@@ -465,7 +488,7 @@ const ViewUserModal = ({
                   </div>
                 ) : (
                   <p className="text-3xl font-bold" style={{ color: '#10b981' }}>
-                    ${user.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                    {formatBalance(user.balance)}
                   </p>
                 )}
                 <div className="mt-2 flex flex-col gap-2">
@@ -638,8 +661,10 @@ const ViewUserModal = ({
                       background: 'rgba(6, 182, 212, 0.1)',
                       border: '1px solid #06b6d4'
                     }}>
-                      <Email style={{ color: '#06b6d4', fontSize: '16px' }} />
-                      <span style={{ color: '#06b6d4' }}>{user.email}</span>
+                      <Email style={{ color: '#06b6d4', fontSize: '16px', flexShrink: 0 }} />
+                      <TruncatedText color="#06b6d4">
+                        {user.email}
+                      </TruncatedText>
                     </div>
                   )}
                 </div>
@@ -673,7 +698,9 @@ const ViewUserModal = ({
                       border: '1px solid #10b981'
                     }}>
                       <Language style={{ color: '#10b981', fontSize: '16px' }} />
-                      <span style={{ color: '#10b981' }}>{user.language || 'English'}</span>
+                      <TruncatedText color="#10b981">
+                        {user.language || 'English'}
+                      </TruncatedText>
                     </div>
                   )}
                 </div>
@@ -702,9 +729,9 @@ const ViewUserModal = ({
                       border: '1px solid #f59e0b'
                     }}>
                       <CalendarToday style={{ color: '#f59e0b', fontSize: '16px' }} />
-                      <span style={{ color: '#f59e0b' }}>
+                      <TruncatedText color="#f59e0b">
                         {new Date(user.dateOfBirth).toLocaleDateString()}
-                      </span>
+                      </TruncatedText>
                     </div>
                   ) : (
                     <div className="p-3 text-gray-400">Not set</div>
@@ -720,9 +747,9 @@ const ViewUserModal = ({
                     border: '1px solid #8b5cf6'
                   }}>
                     <CalendarToday style={{ color: '#8b5cf6', fontSize: '16px' }} />
-                    <span style={{ color: '#8b5cf6' }}>
+                    <TruncatedText color="#8b5cf6">
                       {new Date(user.createdAt).toLocaleDateString()}
-                    </span>
+                    </TruncatedText>
                   </div>
                 </div>
 
@@ -844,7 +871,9 @@ const ViewUserModal = ({
                       border: '1px solid #06b6d4'
                     }}>
                       <span className="text-lg">{getCountryFlag(user.country)}</span>
-                      <span style={{ color: '#06b6d4' }}>{user.country}</span>
+                      <TruncatedText color="#06b6d4">
+                        {user.country}
+                      </TruncatedText>
                     </div>
                   ) : (
                     <div className="p-3 text-gray-400">Not set</div>
@@ -866,12 +895,15 @@ const ViewUserModal = ({
                       className="bg-white rounded"
                     />
                   ) : user.state ? (
-                    <div className="p-3 rounded-lg" style={{ 
+                    <div className="flex items-center gap-2 p-3 rounded-lg" style={{ 
                       background: 'rgba(16, 185, 129, 0.1)',
                       border: '1px solid #10b981',
-                      color: '#10b981'
+                      color: '#10b981',
+                      width: '100%'
                     }}>
-                      {user.state}
+                      <TruncatedText sx={{ width: '100%' }} color="#10b981">
+                        {user.state}
+                      </TruncatedText>
                     </div>
                   ) : (
                     <div className="p-3 text-gray-400">Not set</div>
@@ -898,7 +930,9 @@ const ViewUserModal = ({
                       border: '1px solid #f59e0b'
                     }}>
                       <LocationOn style={{ color: '#f59e0b', fontSize: '16px' }} />
-                      <span style={{ color: '#f59e0b' }}>{user.city}</span>
+                      <TruncatedText color="#f59e0b">
+                        {user.city}
+                      </TruncatedText>
                     </div>
                   ) : (
                     <div className="p-3 text-gray-400">Not set</div>
@@ -923,9 +957,12 @@ const ViewUserModal = ({
                     <div className="p-3 rounded-lg" style={{ 
                       background: 'rgba(139, 92, 246, 0.1)',
                       border: '1px solid #8b5cf6',
-                      color: '#8b5cf6'
+                      color: '#8b5cf6',
+                      width: '100%'
                     }}>
-                      {user.postalCode}
+                      <TruncatedText sx={{ width: '100%' }} color="#8b5cf6">
+                        {user.postalCode}
+                      </TruncatedText>
                     </div>
                   ) : (
                     <div className="p-3 text-gray-400">Not set</div>
@@ -954,9 +991,14 @@ const ViewUserModal = ({
                     background: 'rgba(34, 197, 94, 0.1)',
                     border: '1px solid #22c55e',
                     color: '#22c55e',
-                    whiteSpace: 'pre-wrap'
+                    whiteSpace: 'pre-wrap',
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
                   }}>
-                    {user.residentAddress}
+                    <TruncatedText>
+                      {user.residentAddress}
+                    </TruncatedText>
                   </div>
                 ) : (
                   <div className="p-3 text-gray-400">Not set</div>
@@ -1038,9 +1080,9 @@ const ViewUserModal = ({
                     border: '1px solid var(--accent-purple)'
                   }}>
                     <Group style={{ color: 'var(--accent-purple)', fontSize: '16px' }} />
-                    <span style={{ color: 'var(--accent-purple)' }}>
+                    <TruncatedText color="var(--accent-purple)">
                       {user.referralCount || 0} referrals
-                    </span>
+                    </TruncatedText>
                   </div>
                 </div>
 
@@ -1072,9 +1114,9 @@ const ViewUserModal = ({
                       border: '1px solid #22c55e'
                     }}>
                       <AccountBalance style={{ color: '#22c55e', fontSize: '16px' }} />
-                      <span style={{ color: '#22c55e' }}>
+                      <TruncatedText color="#22c55e">
                         {user.commissionRate || 0}%
-                      </span>
+                      </TruncatedText>
                     </div>
                   )}
                 </div>
@@ -1102,9 +1144,12 @@ const ViewUserModal = ({
                     <div className="p-3 rounded-lg" style={{ 
                       background: 'rgba(245, 158, 11, 0.1)',
                       border: '1px solid #f59e0b',
-                      color: '#f59e0b'
+                      color: '#f59e0b',
+                      width: '100%'
                     }}>
-                      Level {user.current_level || 0}
+                      <TruncatedText sx={{ width: '100%' }} color="#f59e0b">
+                        Level {user.current_level || 0}
+                      </TruncatedText>
                     </div>
                   )}
                 </div>
@@ -1118,9 +1163,12 @@ const ViewUserModal = ({
                   <div className="p-3 rounded-lg" style={{ 
                     background: 'rgba(6, 182, 212, 0.1)',
                     border: '1px solid #06b6d4',
-                    color: '#06b6d4'
+                    color: '#06b6d4',
+                    width: '100%'
                   }}>
-                    {user.referredBy?.username || user.referredBy?.email || 'Unknown User'}
+                    <TruncatedText sx={{ width: '100%' }} color="#06b6d4">
+                      {user.referredBy?.username || user.referredBy?.email || 'Unknown User'}
+                    </TruncatedText>
                   </div>
                 </div>
               )}
@@ -1149,9 +1197,12 @@ const ViewUserModal = ({
                   <div className="p-3 rounded-lg" style={{ 
                     background: 'rgba(139, 92, 246, 0.1)',
                     border: '1px solid #8b5cf6',
-                    color: '#8b5cf6'
+                    color: '#8b5cf6',
+                    width: '100%'
                   }}>
-                    {user.referralCampaign}
+                    <TruncatedText sx={{ width: '100%' }} color="#8b5cf6">
+                      {user.referralCampaign}
+                    </TruncatedText>
                   </div>
                 </div>
               ) : null}
@@ -1179,13 +1230,13 @@ const ViewUserModal = ({
                         border: '1px solid var(--accent-purple)'
                       }}
                     >
-                      <p style={{ color: 'var(--accent-purple)', fontWeight: 'medium' }}>
+                      <TruncatedText style={{ color: 'var(--accent-purple)', fontWeight: 'medium' }}>
                         {referral.username || referral.email || 'Unknown User'}
-                      </p>
+                      </TruncatedText>
                       {referral.firstName && referral.lastName && (
-                        <p style={{ color: 'var(--text-dark)', fontSize: '12px' }}>
+                        <TruncatedText style={{ color: 'var(--text-dark)', fontSize: '12px' }}>
                           {referral.firstName} {referral.lastName}
-                        </p>
+                        </TruncatedText>
                       )}
                     </div>
                   ))}
