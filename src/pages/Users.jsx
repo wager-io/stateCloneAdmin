@@ -21,6 +21,7 @@ import {
 import api from "../api/axios";
 import CreateUserModal from '../components/users/CreateUserModal';
 import ViewUserModal from '../components/users/ViewUserModal';
+import { formatBalance } from '../utils/formatUtils';
 
 export default function Users() {
   const [usersData, setUsersData] = useState({
@@ -132,14 +133,20 @@ export default function Users() {
   };
 
   // Handle view user
-  const handleViewUser = (userId) => {
+  const handleViewUser = (user) => {
+    setSelectedUser(user);
     setShowViewModal(true);
-    fetchUserById(userId);
-    
-    // Update URL with user ID
-    const url = new URL(window.location);
-    url.searchParams.set('userId', userId);
-    window.history.pushState({}, '', url);
+  };
+
+  // Handle user update from modal
+  const handleUserUpdate = (updatedUser) => {
+    setUsersData(prev => ({
+      ...prev,
+      users: prev.users.map(user => 
+        user._id === updatedUser._id ? { ...user, ...updatedUser } : user
+      )
+    }));
+    setSelectedUser(updatedUser);
   };
 
   // Close view modal
@@ -322,7 +329,7 @@ export default function Users() {
               <div>
                 <p style={{ color: 'var(--text-dark)', fontSize: '14px' }}>Total Balance</p>
                 <p className="text-[18px] font-bold" style={{ color: 'var(--text-light)' }}>
-                  ${usersData.statistics.overview.totalBalance?.toLocaleString() || 0}
+                  {formatBalance(usersData.statistics.overview.totalBalance)}
                 </p>
               </div>
             </div>
@@ -566,7 +573,7 @@ export default function Users() {
                       className="py-4 px-6 text-xs font-bold"
                       style={{ color: 'var(--success-green)' }}
                     >
-                      ${user.balance?.toLocaleString() || 0}
+                      {formatBalance(user.balance)}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
@@ -596,7 +603,7 @@ export default function Users() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <button 
-                        onClick={() => handleViewUser(user._id)}
+                        onClick={() => handleViewUser(user)}
                         className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
                         style={{ 
                           color: 'var(--accent-purple)',
@@ -738,12 +745,15 @@ export default function Users() {
         createLoading={createLoading}
       />
 
-      <ViewUserModal
-        showModal={showViewModal}
-        onClose={closeViewModal}
-        selectedUser={selectedUser}
-        loadingUser={loadingUser}
-      />
+      {showViewModal && (
+        <ViewUserModal
+          showModal={showViewModal}
+          onClose={closeViewModal}
+          initialUser={selectedUser}
+          loadingUser={loadingUser}
+          onUserUpdate={handleUserUpdate}
+        />
+      )}
     </div>
   );
 }
