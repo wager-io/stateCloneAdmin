@@ -4,18 +4,30 @@ import { toast } from 'sonner';
 
 export const backendUrl = () => {
   let localhostUrl = "http://localhost:8000";
-  let remoteUrl = "https://wager-backend.onrender.com";
+  let remoteUrl = "https://love-meet.onrender.com";
   
   // Check if window is defined (client-side) before accessing location
   const isLocalhost = typeof window !== 'undefined' && 
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   
   const _api = isLocalhost ? localhostUrl : remoteUrl;
-  return _api;
+  return remoteUrl;
+};
+
+const baseUrl = () => {
+  let localhostUrl = "http://localhost:8000/wager";
+  let remoteUrl = "https://love-meet.onrender.com/wager";
+  
+  // Check if window is defined (client-side) before accessing location
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  
+  const _api = isLocalhost ? localhostUrl : remoteUrl;
+  return remoteUrl;
 };
 
 const api = axios.create({
-  baseURL: backendUrl(),
+  baseURL: baseUrl(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
